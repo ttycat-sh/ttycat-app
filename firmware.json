@@ -1,5 +1,5 @@
 {
  "about": "The official firmware a release of the app carries: this version of ttycat-firmware, for this board, as its release workflow signed and published it. Change it when a new firmware release has been tried with this app.",
- "version": "0.11.2",
+ "version": "0.11.3",
  "board": "waveshare-esp32-c5-touch-lcd-2-8"
 }
