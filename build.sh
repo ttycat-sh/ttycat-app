@@ -66,13 +66,13 @@ INFO=$(python3 "$ROOT/tools/app_build.py" "$APP/Contents/Resources/daemon" ${TTY
 read -r SHORT BUILD SPARKLE_KEY <<EOF_INFO
 $INFO
 EOF_INFO
-# A release checks for a new app every 4 hours, and installs only what its environment's app update key
+# A release checks for a new app every hour, Sparkle's shortest, and at start if the last check is older. It installs only what its environment's app update key
 # signed. A developer's build has no key, so Sparkle never starts in it.
 SPARKLE=""
 if [ "$SPARKLE_KEY" != "-" ]; then
   SPARKLE="<key>SUPublicEDKey</key><string>$SPARKLE_KEY</string>
   <key>SUEnableAutomaticChecks</key><true/>
-  <key>SUScheduledCheckInterval</key><integer>14400</integer>
+  <key>SUScheduledCheckInterval</key><integer>3600</integer>
   <key>SUEnableSystemProfiling</key><false/>"
 fi
 cp "$ROOT/LICENSE" "$ROOT/NOTICE" "$ROOT/THIRD_PARTY.md" "$APP/Contents/Resources/"
