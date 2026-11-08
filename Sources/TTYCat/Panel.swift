@@ -732,6 +732,15 @@ private struct FirmwareSection: View {
       if core.state == "failed", !core.msg.isEmpty, !m.flashBusy {
         note("Last update: \(core.msg)", warn: true)
       }
+      if let folder = core.folder, !FileManager.default.fileExists(atPath: folder) {
+        if core.available == nil {
+          note("Its folder isn't at \(folder) any more.", warn: true)
+        }
+        PixelButton(title: "Choose its folder again", enabled: !m.flashBusy) { m.chooseBoardFolder() }
+        if let refused = m.registerRefused {
+          note("That folder wasn't taken: \(refused)", warn: true)
+        }
+      }
     } else if let core {
       if core.folder != nil {
         note("It runs a build this Mac has no copy of. Choose its folder again, so the one it runs can go back on if an update fails.", warn: true)
