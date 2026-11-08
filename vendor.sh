@@ -23,7 +23,9 @@ fi
 
 mkdir -p "$HERE/.vendor"
 TAR="$HERE/.vendor/$PY_FILE"
-[ -f "$TAR" ] || curl -fsSL --retry 3 -o "$TAR" "$PY_URL"
+# GitHub's release downloads can be down for a while: retried for about 3 minutes. The hash below checks
+# whatever arrives, from here or from a cache.
+[ -f "$TAR" ] || curl -fsSL --retry 8 --retry-delay 20 --retry-all-errors -o "$TAR" "$PY_URL"
 if [ "$(shasum -a 256 "$TAR" | cut -d' ' -f1)" != "$PY_SHA" ]; then
   rm -f "$TAR"
   echo "vendor: $PY_FILE doesn't match its hash" >&2
