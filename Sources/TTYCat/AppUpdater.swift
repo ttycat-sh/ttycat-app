@@ -1,8 +1,8 @@
 // The app updating itself, with Sparkle. Only a release does: one with build.json in its daemon folder
 // (tools/app_build.py) and SUPublicEDKey in its Info.plist. A developer's build never starts it.
 //
-// Sparkle asks the feed in build.json, ttycat's update server, with the install ID the daemon keeps
-// (for rollouts) and the build it runs (for the count). It installs only a disk image signed by the app
+// Sparkle asks the feed in build.json, ttycat's update server, with the install ID it shares with the
+// daemon (InstallID.swift, for rollouts) and the build it runs (for the count). It installs only a disk image signed by the app
 // update key in SUPublicEDKey, holding an app signed by the same Developer ID team as this one.
 import AppKit
 import Foundation
@@ -76,9 +76,8 @@ extension AppUpdater: SPUUpdaterDelegate {
   /// Only these, and never Sparkle's system profile.
   nonisolated func feedParameters(for updater: SPUUpdater, sendingSystemProfile sendingProfile: Bool) -> [[String: String]] {
     var parameters: [[String: String]] = []
-    let idFile = URL(fileURLWithPath: NSHomeDirectory() + "/.ttycat/install-id")
-    if let id = try? String(contentsOf: idFile, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines),
-       id.count == 32, id.allSatisfy({ $0.isHexDigit && !$0.isUppercase }) {
+    // Made here if the daemon hasn't yet, so a Mac without a board is in rollouts too.
+    if let id = InstallID.readOrMake() {
       parameters.append(["key": "install", "value": id, "displayKey": "Install", "displayValue": id])
     }
     if let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String {
