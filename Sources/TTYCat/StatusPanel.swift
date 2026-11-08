@@ -155,6 +155,7 @@ final class StatusPanel: NSObject {
   }
 
   func close() {
+    let wasOpen = isOpen
     if let clicks { NSEvent.removeMonitor(clicks) }
     if let keys { NSEvent.removeMonitor(keys) }
     if let presses { NSEvent.removeMonitor(presses) }
@@ -171,9 +172,11 @@ final class StatusPanel: NSObject {
     anchor = nil
     // A click on a notification makes this the active app. With no window left, your typing would
     // go nowhere: this gives the front back to whatever you were in. Not while a window of its own is
-    // showing, such as the app's update: hiding the app would hide that too.
+    // showing, such as the app's update: hiding the app would hide that too. Only when it was open:
+    // closed already, as when Sparkle has found an update and is about to show it, there's nothing to
+    // give back, and hiding would hide the window that's coming.
     let window = NSApp.windows.contains { $0 !== panel && $0.isVisible && $0.styleMask.contains(.titled) }
-    if NSApp.isActive && !window { NSApp.hide(nil) }
+    if wasOpen && NSApp.isActive && !window { NSApp.hide(nil) }
   }
 
   private func buttonFrame() -> (button: CGRect, visible: CGRect)? {

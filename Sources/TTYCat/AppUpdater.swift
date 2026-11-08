@@ -104,7 +104,13 @@ extension AppUpdater: SPUStandardUserDriverDelegate {
   ) {
     let version = update.displayVersionString
     MainActor.assumeIsolated {
-      if handleShowingUpdate { StatusPanel.shared?.close() } else { ready?(version) }
+      if handleShowingUpdate {
+        // In front, even if the app was hidden meanwhile: a window in a hidden app shows nowhere.
+        StatusPanel.shared?.close()
+        NSApp.activate()
+      } else {
+        ready?(version)
+      }
     }
   }
 
