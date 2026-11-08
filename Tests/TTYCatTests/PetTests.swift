@@ -73,7 +73,7 @@ private func row(_ s: String, id: String = "a", rev: String? = nil) -> AgentRow 
   }
 }
 
-// The board's rules for how Bit looks: firmware/main/pet.c.
+// The board's rules for how Bit looks: ttycat-firmware's main/pet.c.
 private func pet(asleep: Bool = false) -> PetInfo {
   PetInfo(name: "Bit", total: 30, today: 2, age: 3, asleep: asleep)
 }

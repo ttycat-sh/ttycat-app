@@ -5,7 +5,7 @@
 // its parent, so a different prompt always gets a new card with its buttons unarmed.
 import SwiftUI
 
-private let armDelay = Duration.milliseconds(600)  // ARM_DELAY_MS in firmware/main/ui.c
+private let armDelay = Duration.milliseconds(600)  // ARM_DELAY_MS in ttycat-firmware's main/ui.c
 private let maxTyped = 1000                        // approvals.MAX_TYPED
 
 struct AskCard: View {

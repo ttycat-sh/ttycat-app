@@ -9,7 +9,7 @@ import SwiftUI
 /// next thing under the pointer may be Allow. So nothing on a prompt works until a moment has passed
 /// and the clicks have stopped.
 enum HandsOff {
-  static let afterInterruption: TimeInterval = 1.5  // HANDS_OFF_MS in firmware/main/ui.c
+  static let afterInterruption: TimeInterval = 1.5  // HANDS_OFF_MS in ttycat-firmware's main/ui.c
   static let afterClick: TimeInterval = 0.8         // HANDS_OFF_MORE_MS
 
   static func clear(now: Date, until: Date, lastClick: Date) -> Bool {
@@ -24,7 +24,7 @@ enum HandsOff {
 
 // ---------------------------------------------------------------- sprites
 
-/// firmware/main/pet.c's little pictures: one string per row, "o" lit.
+/// ttycat-firmware's main/pet.c's little pictures: one string per row, "o" lit.
 struct PixelMap: View {
   static let heart = [".oo.oo.", "ooooooo", "ooooooo", ".ooooo.", "..ooo..", "...o..."]
 
@@ -46,7 +46,7 @@ struct PixelMap: View {
 
 // ---------------------------------------------------------------- the page
 
-/// A pat, a hello or a finished turn: shown here and on the board alike. Timings are firmware/main/pet.c's.
+/// A pat, a hello or a finished turn: shown here and on the board alike. Timings are ttycat-firmware's main/pet.c's.
 struct PetEvent: Equatable {
   enum Kind: String {
     case heart, rested, welcome, birthday, reward
@@ -78,7 +78,7 @@ struct PetEvent: Equatable {
   }
 }
 
-/// How Bit looks, by the board's rules (pet_draw in firmware/main/pet.c), so the two agree. Where it
+/// How Bit looks, by the board's rules (pet_draw in ttycat-firmware's main/pet.c), so the two agree. Where it
 /// happens to wander on the board's screen is the one thing that isn't shared.
 enum PetLook {
   /// Night or a dim screen sends it to sleep, unless there's work on.
@@ -289,13 +289,13 @@ extension PetInfo {
     return birthday ? "happy birthday" : "doing fine"
   }
 
-  /// pet_progress in firmware/main/pet.c.
+  /// pet_progress in ttycat-firmware's main/pet.c.
   func progress(of cells: Int) -> Int {
     let n = level, from = 3 * (n - 1) * (n - 1), to = 3 * n * n
     return ((grown ?? total) - from) * cells / (to - from)
   }
 
-  /// next_keepsake in firmware/main/ui.c.
+  /// next_keepsake in ttycat-firmware's main/ui.c.
   var nextKeepsake: String {
     level < 3 ? "headset at level 3" : level < 5 ? "antenna at level 5" : level < 8 ? "crown at level 8" : "wearing its crown"
   }

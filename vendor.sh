@@ -1,7 +1,7 @@
 #!/bin/sh
 # Prepares what the app carries so it needs nothing installed: Python, and esptool for the board.
 # Downloads from GitHub and PyPI, pinned by version and, for Python, by hash. The result is cached
-# in .vendor/, and app/build.sh copies it into the app.
+# in .vendor/, and build.sh copies it into the app.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)

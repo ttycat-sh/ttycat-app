@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+      - name: The app
+        run: swift test
+      - name: What a release is told, and the colours
+        run: python3 -m unittest discover -s tools/tests
+      - name: It builds, with no firmware beside it
+        run: ./build.sh
+      - name: It stands on its own
+        run: |
+          test ! -e Sources/TTYCat/_extra
+          ! git grep -n -E 'ProFeatures\.' -- ':!Sources/TTYCat/Extensions.swift'

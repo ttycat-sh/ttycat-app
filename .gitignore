@@ -1,0 +1,13 @@
+# Built by build.sh and swift
+build/
+.build/
+.swiftpm/
+.vendor/
+
+# An extended build's sources, copied in for the length of its build: see Extensions.swift.
+Sources/TTYCat/_extra/
+Tests/TTYCatTests/_extra/
+
+__pycache__/
+*.pyc
+.DS_Store

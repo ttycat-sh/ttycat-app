@@ -1,11 +1,14 @@
 #!/bin/sh
 # Builds "ttycat.app" without Xcode (the command line tools are enough).
-#   app/build.sh            build it into app/build/
-#   app/build.sh install    also put it in /Applications and start it
+#   ./build.sh            build it into build/
+#   ./build.sh install    also put it in /Applications and start it
+# The daemon is the daemon/ submodule (git submodule update --init). The firmware it carries comes from a
+# ttycat-firmware checkout beside this one, or TTYCAT_FIRMWARE_DIR.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
-ROOT=$(dirname "$HERE")
+ROOT=$HERE
+FW_SRC=${TTYCAT_FIRMWARE_DIR:-$(dirname "$HERE")/ttycat-firmware}
 APP="$HERE/build/ttycat.app"
 
 cd "$HERE"
@@ -20,31 +23,31 @@ cp "$BINDIR/TTYCat" "$APP/Contents/MacOS/ttycat"
 ditto "$BINDIR/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
 cp "$ROOT"/tools/fonts/*.ttf "$ROOT"/tools/fonts/OFL-*.txt "$APP/Contents/Resources/"
 
-# The firmware this app can put on the board. It's only ever the last build: firmware/ isn't built here.
-# app/release.sh gives it the signed release image instead (TTYCAT_FIRMWARE_IMAGE), as is: the daemon
+# The firmware this app can put on the board. It's only ever the last build: the firmware isn't built here.
+# release.sh gives it the signed release image instead (TTYCAT_FIRMWARE_IMAGE), as is: the daemon
 # writes ttycat's own firmware only from a signed image.
-FIRMWARE=${TTYCAT_FIRMWARE_BUILD:-$ROOT/firmware/build}
+FIRMWARE=${TTYCAT_FIRMWARE_BUILD:-$FW_SRC/build}
 if [ -n "${TTYCAT_FIRMWARE_IMAGE:-}" ]; then
   ditto "$TTYCAT_FIRMWARE_IMAGE" "$APP/Contents/Resources/firmware"
 elif [ -f "$FIRMWARE/flasher_args.json" ]; then
   # A firmware build it can't use mustn't stop here: an app with no Info.plist crashes when it's opened.
-  # It goes without, as with no build at all, and app/release.sh won't release one like that.
-  python3 "$ROOT/tools/firmware_bundle.py" "$FIRMWARE" "$APP/Contents/Resources/firmware" \
+  # It goes without, as with no build at all, and release.sh won't release one like that.
+  python3 "$ROOT/daemon/tools/firmware_bundle.py" "$FIRMWARE" "$APP/Contents/Resources/firmware" \
     || echo "warning: that firmware build can't be used; this app can't update the board" >&2
   if python3 -c 'import json, re, sys; sys.exit(not re.fullmatch(r"[0-9.]+", json.load(open(sys.argv[1]))["version"]))' \
       "$APP/Contents/Resources/firmware/manifest.json" 2>/dev/null; then
-    echo "warning: that's a release build, but not signed, so this app won't write it: see tools/release_firmware.sh" >&2
+    echo "warning: that's a release build, but not signed, so this app won't write it: see tools/release_firmware.sh in ttycat-firmware" >&2
   fi
-  if [ -n "$(find "$ROOT/firmware/main" "$ROOT/firmware/boards" -newer "$FIRMWARE/ttycat.bin" -print -quit)" ]; then
+  if [ -n "$(find "$FW_SRC/main" "$FW_SRC/boards" -newer "$FIRMWARE/ttycat.bin" -print -quit)" ]; then
     echo "warning: firmware has changes that aren't built; the app carries the older build" >&2
   fi
 else
   echo "warning: no firmware build found; this app can't update the board" >&2
 fi
 
-# The signed core release it builds for boards of people's own (tools/release_core.py), if there is one.
+# The signed core release it builds for boards of people's own (daemon/tools/release_core.py), if there is one.
 # The daemon checks its signature before building it, whatever's here.
-CORE=${TTYCAT_CORE_RELEASE:-$ROOT/firmware/build-release-core}
+CORE=${TTYCAT_CORE_RELEASE:-$FW_SRC/build-release-core}
 if ls "$CORE"/ttycat-core-*.json >/dev/null 2>&1; then
   mkdir -p "$APP/Contents/Resources/core"
   cp "$CORE"/ttycat-core-*.json "$CORE"/ttycat-core-*.tar.gz "$APP/Contents/Resources/core/"
@@ -52,7 +55,7 @@ else
   echo "warning: no core release found; this app can't update boards of people's own" >&2
 fi
 
-# The daemon, and the Python to run it: the app needs nothing else on the Mac. Without app/vendor.sh
+# The daemon, and the Python to run it: the app needs nothing else on the Mac. Without vendor.sh
 # it still builds, and uses the system's Python, for working on it. A release needs it: see release.sh.
 mkdir -p "$APP/Contents/Resources/daemon"
 cp "$ROOT"/daemon/*.py "$ROOT/daemon/agent_rules.json" "$ROOT/daemon/agent_rules.LICENSE" "$APP/Contents/Resources/daemon/"
@@ -83,7 +86,7 @@ if [ -d "$HERE/.vendor/python" ]; then
     "$APP/Contents/Resources/python/bin/python3" -E -s -m compileall -q --invalidation-mode unchecked-hash "$folder"
   done
 else
-  echo "warning: no bundled Python (run app/vendor.sh): this build uses the system's" >&2
+  echo "warning: no bundled Python (run ./vendor.sh): this build uses the system's" >&2
 fi
 
 cat > "$APP/Contents/Info.plist" <<EOF

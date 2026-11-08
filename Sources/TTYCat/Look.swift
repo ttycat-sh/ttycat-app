@@ -1,4 +1,4 @@
-// Bit's colours and the accent, chosen by number: the same tables as firmware/main/gfx.c.
+// Bit's colours and the accent, chosen by number: the same tables as ttycat-firmware's main/gfx.c.
 import AppKit
 import SwiftUI
 

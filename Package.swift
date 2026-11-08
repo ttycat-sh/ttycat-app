@@ -13,7 +13,7 @@ let package = Package(
       name: "TTYCat",
       dependencies: [.product(name: "Sparkle", package: "Sparkle")],
       path: "Sources/TTYCat",
-      // Sparkle.framework is in the app's Contents/Frameworks: app/build.sh puts it there.
+      // Sparkle.framework is in the app's Contents/Frameworks: build.sh puts it there.
       linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
     ),
     .testTarget(name: "TTYCatTests", dependencies: ["TTYCat"], path: "Tests/TTYCatTests"),

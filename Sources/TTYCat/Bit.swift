@@ -1,4 +1,4 @@
-// Bit, the board's mascot: the same 16x14 sprite as firmware/main/pet.c, for the panel,
+// Bit, the board's mascot: the same 16x14 sprite as ttycat-firmware's main/pet.c, for the panel,
 // the menu bar and the app icon.
 import AppKit
 import SwiftUI

@@ -64,7 +64,7 @@ struct PetInfo: Decodable {
 
   var level: Int { Self.level(total: grown ?? total) }
 
-  // The same curve as firmware/main/pet.c.
+  // The same curve as ttycat-firmware's main/pet.c.
   static func level(total: Int) -> Int {
     var n = 1
     while 3 * n * n <= total { n += 1 }
@@ -78,7 +78,7 @@ struct BoardInfo: Decodable {
   var fw: String?
   var dim: Bool?  // its screen is dim, and Bit dozes there
   var approves: Bool?  // it may say yes to prompts: see daemon/devices.py
-  var name: String?  // which folder in firmware/boards it was built from
+  var name: String?  // which folder in ttycat-firmware's boards/ it was built from
   var label: String?  // the name the person gave it, kept on the board and on this Mac
   var outdated: Bool?  // it speaks another version of the protocol, so it's not being sent anything
   var silent: [String]?  // ports that were tried and said nothing
@@ -206,7 +206,7 @@ final class Supervisor: @unchecked Sendable {  // only hook() runs off the main 
   let daemonDir = ProcessInfo.processInfo.environment["TTYCAT_DAEMON_DIR"]
     ?? Bundle.main.resourceURL?.appendingPathComponent("daemon").path
 
-  /// The app's own, from app/vendor.sh: a Mac may have no other. A build without it uses the system's.
+  /// The app's own, from vendor.sh: a Mac may have no other. A build without it uses the system's.
   static var python: String? {
     let own = Bundle.main.resourceURL?.appendingPathComponent("python/bin/python3").path
     return ([own].compactMap { $0 } + ["/opt/homebrew/bin/python3", "/usr/local/bin/python3", "/usr/bin/python3"])

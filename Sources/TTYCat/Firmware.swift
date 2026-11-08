@@ -12,7 +12,7 @@ struct FlashInfo: Decodable {
   var busy: Bool { ["flashing", "reading", "restarting"].contains(state) }
 }
 
-/// The firmware this copy of the app carries: app/build.sh packs it from firmware/build.
+/// The firmware this copy of the app carries: build.sh packs it from ttycat-firmware's build/.
 struct FirmwareImage: Decodable {
   let version: String
   var board: String? = nil

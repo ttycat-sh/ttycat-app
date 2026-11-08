@@ -1,29 +1,30 @@
 #!/bin/sh
 # A release: Developer ID signed, in a disk image, notarized by Apple so it opens on any Mac.
 #   TTYCAT_VERSION=X.Y.Z (prod) or X.Y.Z-dev.N (dev): required, and normally from the release's tag
-#   app/vendor.sh     once, for the bundled Python and esptool
-#   the firmware and core it carries, signed for that environment: tools/release_firmware.sh here, or
+#   ./vendor.sh     once, for the bundled Python and esptool
+#   the firmware and core it carries, signed for that environment: tools/release_firmware.sh in the
+#     ttycat-firmware checkout beside this one (or TTYCAT_FIRMWARE_DIR), or
 #     TTYCAT_FIRMWARE_IMAGE and TTYCAT_CORE_RELEASE, as CI gives them
 #   notarizing: NOTARY_KEY_FILE, NOTARY_KEY_ID and NOTARY_ISSUER (an App Store Connect API key, as CI
 #     has), or else `xcrun notarytool store-credentials ttycat` once on this Mac
-#   app/release.sh
+#   ./release.sh
 # NOTARIZE=no stops before anything is sent to Apple.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
-CORE_ROOT=$(dirname "$HERE")
+FW_SRC=${TTYCAT_FIRMWARE_DIR:-$(dirname "$HERE")/ttycat-firmware}
 APP="$HERE/build/ttycat.app"
 VERSION=${TTYCAT_VERSION:-}
 echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-dev\.[0-9]+)?$' \
   || { echo "TTYCAT_VERSION is X.Y.Z or X.Y.Z-dev.N, not '$VERSION': a release has a version" >&2; exit 1; }
 DMG="$HERE/build/ttycat-$VERSION.dmg"
 
-[ -d "$HERE/.vendor/python" ] || { echo "run app/vendor.sh first: a release can't rely on the buyer's Python" >&2; exit 1; }
+[ -d "$HERE/.vendor/python" ] || { echo "run ./vendor.sh first: a release can't rely on the buyer's Python" >&2; exit 1; }
 # ttycat's own Apple developer team, and no other, even with other teams' certificates in the keychain.
 # Sparkle also refuses an update signed by another team than the app it replaces.
 TEAM=${TTYCAT_TEAM_ID:-D4N534TM9Q}
 # The one that runs longest, by its fingerprint: a renewed certificate has the same name as the old one.
-FOUND=$(python3 "$CORE_ROOT/tools/signing_identity.py" "Developer ID Application" "$TEAM")
+FOUND=$(python3 "$HERE/tools/signing_identity.py" "Developer ID Application" "$TEAM")
 IDENTITY=${FOUND%%	*}
 NAME=${FOUND#*	}
 [ -n "$IDENTITY" ] || { echo "no Developer ID Application certificate for team $TEAM in the keychain" >&2; exit 1; }
@@ -32,13 +33,13 @@ NAME=${FOUND#*	}
 if [ -n "${TTYCAT_FIRMWARE_IMAGE:-}" ]; then
   IMAGE=$TTYCAT_FIRMWARE_IMAGE
 else
-  FIRMWARE="$CORE_ROOT/firmware/build-release"
-  IMAGE="$CORE_ROOT/firmware/build-release-image"
-  [ -f "$FIRMWARE/ttycat.bin" ] && [ -f "$IMAGE/release.json" ] || { echo "run tools/release_firmware.sh first" >&2; exit 1; }
-  [ -z "$(find "$CORE_ROOT/firmware/main" "$CORE_ROOT/firmware/boards" -newer "$FIRMWARE/ttycat.bin" -print -quit)" ] \
+  FIRMWARE="$FW_SRC/build-release"
+  IMAGE="$FW_SRC/build-release-image"
+  [ -f "$FIRMWARE/ttycat.bin" ] && [ -f "$IMAGE/release.json" ] || { echo "run tools/release_firmware.sh in $FW_SRC first" >&2; exit 1; }
+  [ -z "$(find "$FW_SRC/main" "$FW_SRC/boards" -newer "$FIRMWARE/ttycat.bin" -print -quit)" ] \
     || { echo "the firmware has changed: run tools/release_firmware.sh again" >&2; exit 1; }
 fi
-CORE_RELEASE=${TTYCAT_CORE_RELEASE:-$CORE_ROOT/firmware/build-release-core}
+CORE_RELEASE=${TTYCAT_CORE_RELEASE:-$FW_SRC/build-release-core}
 ls "$CORE_RELEASE"/ttycat-core-*.json >/dev/null 2>&1 || { echo "no signed core release in $CORE_RELEASE" >&2; exit 1; }
 
 TTYCAT_FIRMWARE_IMAGE=$IMAGE TTYCAT_CORE_RELEASE=$CORE_RELEASE TTYCAT_SIGN_IDENTITY="$IDENTITY" TTYCAT_SIGN_NAME="$NAME" \

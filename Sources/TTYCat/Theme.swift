@@ -11,7 +11,7 @@ extension Color {
   }
 }
 
-// The same values as firmware/main/ui.c.
+// The same values as ttycat-firmware's main/ui.c.
 enum Palette {
   static let black = Color(hex: 0x000000)
   static let tile = Color(hex: 0x0C0C0C)
