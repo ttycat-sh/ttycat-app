@@ -217,7 +217,7 @@ enum Preview {
   }
 
   /// fw-core: an update to offer; -new: not registered; -again: runs a build this Mac has no copy of;
-  /// -read: reading what it runs, to register it; -blocked: needs the folder changed;
+  /// -read: reading what it runs, to register it; -blocked: needs the folder changed; -moved: its folder isn't there;
   /// -build, -write, -back: under way; -fail: the new build didn't start.
   static func previewCore(_ scene: String) -> CoreInfo? {
     guard scene.hasPrefix("fw-core") else { return nil }
@@ -225,6 +225,9 @@ enum Preview {
     switch scene {
     case "fw-core-again": core.folder = "/Users/you/boards/desk-cat"
     case "fw-core-blocked": core.blocked = "This update needs the board's folder changed. Ask Claude to update it."
+    case "fw-core-moved":
+      core.folder = "/Users/you/old/desk-cat"
+      core.blocked = "Its folder isn't at /Users/you/old/desk-cat any more."
     case "fw-core-build": (core.state, core.pct, core.to) = ("building", 37, "0.11.0")
     case "fw-core-write": (core.state, core.to) = ("writing", "0.11.0")
     case "fw-core-back": (core.state, core.to) = ("putting-back", "0.11.0")
