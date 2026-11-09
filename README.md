@@ -18,7 +18,7 @@ git submodule update --init   # the daemon, once
 ./build.sh install            # also copies it to /Applications and starts it
 ```
 
-**Setup** in the panel has start at login (off until you tick it; use the copy in /Applications), the permission hook, notifications, other machines and the daemon's log.
+**Setup** in the panel has start at login (off until you tick it; use the copy in /Applications), the permission hook, update checks, notifications, the board's firmware and the daemon's log.
 
 **The first time**, the panel opens by itself, and asks for start at login, the permission hook and notifications, each once. A release opened from its disk image or from Downloads first offers to move itself into Applications: it can only update itself from there.
 
@@ -39,7 +39,7 @@ git submodule update --init   # the daemon, once
 - **The panel is its own window, not SwiftUI's `MenuBarExtra`,** which grows its window but never shrinks it (`StatusPanel.swift`). Its top stays under the icon, its height follows the page, and a page too tall for the screen scrolls under the tabs. It takes the keyboard without making this the active app, like Spotlight, so what you were in stays in front. A click elsewhere, Esc, or switching app closes it. Its content is built new on each open, so a prompt's buttons always get their full delay.
 - **One daemon at a time.** A second one exits with status 3. If one's already running, from a terminal say, the app uses it, and leaves it running when it quits. One the app started stops with it.
 - Plain `@State` doesn't build here: in current SDKs it's a macro, and its plugin comes only with Xcode. Panel.swift has a small stand-in.
-- To check the look without opening the menu: `"build/ttycat.app/Contents/MacOS/ttycat" --preview out.png needs` (`busy`, `needs`, `diff`, `long`, `question`, `questions`, `terminal`, `detail`, `done`, `idle`, `setup`, `setup-new`, `setup-denied`, `setup-short`, `welcome`, `noboard`, `pet`, `pet-asleep`, `pet-needs`, `pet-level`, `pet-hello`, `pet-birthday`, `fw-update`, `fw-write`, `fw-back`, `fw-fail`, `fw-unknown`, `fw-custom`, `fw-custom-on`, `stopped`, `unplugged`).
+- To check the look without opening the menu: `"build/ttycat.app/Contents/MacOS/ttycat" --preview out.png needs` (`busy`, `needs`, `diff`, `long`, `question`, `questions`, `terminal`, `detail`, `done`, `idle`, `setup`, `setup-new`, `setup-denied`, `setup-short`, `welcome`, `noboard`, `pet`, `pet-asleep`, `pet-needs`, `pet-level`, `pet-hello`, `pet-birthday`, `pet-old`, `pet-work`, `fw-update`, `fw-write`, `fw-back`, `fw-fail`, `fw-unknown`, `fw-custom`, `fw-custom-on`, `fw-custom-old`, `fw-core`, `fw-core-new`, `fw-core-again`, `fw-core-read`, `fw-core-blocked`, `fw-core-moved`, `fw-core-build`, `fw-core-write`, `fw-core-back`, `fw-core-fail`, `stopped`, `unplugged`).
 
 ## What it carries
 
@@ -59,7 +59,7 @@ The first needs no Xcode, only to be told where the command line tools keep the 
 
 Everything here is free and open source: seeing your agents, answering their prompts, notifications, the board and its firmware, and Bit. It's complete without anything else.
 
-The official download adds paid features on top, kept in a separate private repository: usage and limits, a log of what agents did, other machines, and skins. They join through two small interfaces, `Sources/TTYCat/Extensions.swift` here and `plugins.py` in the daemon, and this code never depends on them.
+Pro will add paid features to the official download. It isn't on sale yet. They're kept in a separate private repository: usage and limits, a log of what agents did, other machines, and skins. They join through two small interfaces, `Sources/TTYCat/Extensions.swift` here and `plugins.py` in the daemon, and this code never depends on them.
 
 ## License
 
