@@ -179,7 +179,8 @@ enum Preview {
       flash: FlashInfo(
         state: flashState, pct: 62, msg: scene == "fw-fail" ? "Couldn't reach the board. Hold BOOT while you plug it in, then try again." : "",
         to: scene == "fw-core-read" ? "custom-0.10.1-896b3059" : "0.6.2", tool: true, job: scene == "fw-core-read" ? "read" : "write"),
-      core: Self.previewCore(scene))
+      core: Self.previewCore(scene),
+      updates: UpdatesInfo(check: true, checked: Date().timeIntervalSince1970 - 20 * 60))  // asked 20 minutes ago
     if scene.hasPrefix("fw") {
       model.page = .setup
       model.firmwareImage = FirmwareImage(version: "0.6.2")
@@ -224,6 +225,7 @@ enum Preview {
     var core = CoreInfo(registered: !["fw-core-new", "fw-core-again", "fw-core-read"].contains(scene), core: "0.10.1", available: "0.11.0")
     switch scene {
     case "fw-core-again": core.folder = "/Users/you/boards/desk-cat"
+    case "fw-core-newest": (core.core, core.available) = ("0.11.0", nil)
     case "fw-core-blocked": core.blocked = "This update needs the board's folder changed. Ask Claude to update it."
     case "fw-core-moved":
       core.folder = "/Users/you/old/desk-cat"
