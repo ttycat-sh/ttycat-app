@@ -179,3 +179,16 @@ private func withCore(_ core: CoreInfo, flash state: String = "idle") -> DaemonS
     #"{"state":"reading","pct":12,"msg":"","to":"custom-0.10.1-896b3059","tool":true,"job":"read"}"#.utf8))
   #expect(flash.job == "read" && flash.busy)
 }
+
+@Test func newestSaysAsOfWhen() {
+  var utc = Calendar(identifier: .gregorian)
+  utc.timeZone = TimeZone(identifier: "UTC")!
+  let en = Locale(identifier: "en_GB")
+  let now = Date(timeIntervalSince1970: 1_794_300_000)  // 10 Nov 2026, 08:40 UTC
+  func label(_ u: UpdatesInfo?) -> String { newestLabel("0.11.5", updates: u, now: now, calendar: utc, locale: en) }
+  #expect(label(UpdatesInfo(check: true, checked: 1_794_298_870)) == "0.11.5, newest at 08:21")
+  #expect(label(UpdatesInfo(check: true, checked: 1_794_200_000)) == "0.11.5, newest on 9 Nov")
+  #expect(label(UpdatesInfo(check: true, checked: nil)) == "0.11.5, not checked yet")
+  #expect(label(UpdatesInfo(check: false, checked: 1_794_298_870)) == "0.11.5, update check off")
+  #expect(label(nil) == "0.11.5")
+}

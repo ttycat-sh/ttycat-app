@@ -137,3 +137,24 @@ enum FirmwarePlan: Equatable {
 enum CoreStep: Equatable {
   case building, writing, restarting, puttingBack
 }
+
+/// "0.11.5, newest at 09:21": a version with how sure it is that nothing's newer. Nothing newer is only
+/// known as of the update server's last answer (daemon/updates.py asks every hour), so the panel says when
+/// that was rather than claiming it's the newest there is.
+func newestLabel(_ version: String, updates: UpdatesInfo?, now: Date = Date(), calendar: Calendar = .current,
+                 locale: Locale = .current) -> String {
+  guard let updates else { return version }  // a daemon from before the update check: nothing to go on
+  if !updates.check { return "\(version), update check off" }
+  guard let checked = updates.checked else { return "\(version), not checked yet" }
+  let at = Date(timeIntervalSince1970: checked)
+  let format = DateFormatter()
+  format.locale = locale
+  format.calendar = calendar
+  format.timeZone = calendar.timeZone
+  if calendar.isDate(at, inSameDayAs: now) {
+    format.timeStyle = .short
+    return "\(version), newest at \(format.string(from: at))"
+  }
+  format.setLocalizedDateFormatFromTemplate("dMMM")
+  return "\(version), newest on \(format.string(from: at))"
+}

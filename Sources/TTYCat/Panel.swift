@@ -663,7 +663,7 @@ private struct FirmwareSection: View {
           }
         }
       case .upToDate(let version):
-        Fact(name: "Board", value: "\(version), up to date", good: true)
+        Fact(name: "Board", value: newestLabel(version, updates: m.status?.updates), good: true)
       case .boardNewer(let board, let app):
         Fact(name: "Board", value: "\(board), newer than the app's \(app)", good: true)
       case .update(let from, let to):
@@ -727,7 +727,7 @@ private struct FirmwareSection: View {
           note(core.blocked, warn: true)
         }
       } else if let version = core.core {
-        Fact(name: "Built from core", value: "\(version), the newest", good: true)
+        Fact(name: "Built from core", value: newestLabel(version, updates: m.status?.updates), good: true)
       }
       if core.state == "failed", !core.msg.isEmpty, !m.flashBusy {
         note("Last update: \(core.msg)", warn: true)
