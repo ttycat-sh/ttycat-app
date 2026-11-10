@@ -100,7 +100,7 @@ struct DaemonStatus: Decodable {
   var board: BoardInfo
   var machines: [MachineInfo]
   var term: String?  // the terminal app agents run in
-  var flash: FlashInfo?  // nil from a daemon older than firmware updates
+  var flash: FlashInfo?  // the running daemon always says it
   var look: LookInfo?
   var core: CoreInfo?  // nil from a daemon older than core updates
   var updates: UpdatesInfo?  // nil from a daemon older than the update check

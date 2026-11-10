@@ -619,8 +619,6 @@ private struct FirmwareSection: View {
       switch m.firmwarePlan {
       case .noImage:
         note("This build carries no firmware. Build ttycat-firmware, then run build.sh again.")
-      case .daemonTooOld:
-        note("Restart the daemon to update the board from here.", warn: true)
       case .notConnected:
         Fact(name: "Board", value: "not connected", good: false)
       case .identifying:

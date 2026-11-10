@@ -73,7 +73,7 @@ private func plan(_ s: DaemonStatus?, image i: FirmwareImage? = image) -> Firmwa
   #expect(plan(status(fw: nil, connected: false)) == .notConnected)
   #expect(plan(nil) == .notConnected)
   #expect(plan(status(fw: "0.6.1", tool: false)) == .noTool(to: "0.7.0"))
-  #expect(plan(status(fw: "0.6.1", flash: false)) == .daemonTooOld)
+  #expect(plan(status(fw: "0.6.1", flash: false)) == .notConnected)
 }
 
 @Test func progressComesFirstWhileUpdating() {
