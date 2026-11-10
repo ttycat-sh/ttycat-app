@@ -74,7 +74,6 @@ enum FirmwareVersion {
 
 enum FirmwarePlan: Equatable {
   case noImage                    // this build of the app carries none
-  case daemonTooOld               // running a daemon from before this existed
   case notConnected
   case identifying                // just connected: it says what it runs within seconds
   case unknownDevice(port: String)  // a port that doesn't answer: could be any device
@@ -91,7 +90,7 @@ enum FirmwarePlan: Equatable {
   static func make(status: DaemonStatus?, image: FirmwareImage?) -> FirmwarePlan {
     // A board of someone's own is updated from its own folder, so it doesn't need the image this app carries.
     guard let status, let flash = status.flash else {
-      return image == nil ? .noImage : status == nil ? .notConnected : .daemonTooOld
+      return image == nil ? .noImage : .notConnected
     }
     if let core = status.core, core.busy {
       let to = core.to ?? "the new core"
