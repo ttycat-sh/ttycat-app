@@ -4,6 +4,7 @@
 #   ./build.sh install    also put it in /Applications and start it
 #   ./build.sh test       the app's tests
 #   ./build.sh check      does it compile? (quick)
+#   ./build.sh packages   fetch the Swift packages it's built with (Sparkle), and nothing else: CI retries this
 # Xcode builds the app with its code, fonts, licenses, daemon and icon (tools/assemble_app.sh), so an app
 # run from Xcode is a whole app. Here it also gets the firmware, Python, its version and its signature.
 # The daemon is the daemon/ submodule (git submodule update --init). The firmware it carries comes from a
@@ -30,6 +31,9 @@ xcode() {
     -destination 'platform=macOS,arch=arm64' "$@"
 }
 case "${1:-}" in
+  packages)
+    xcode -resolvePackageDependencies
+    exit 0 ;;
   test)
     xcode test
     echo "tests passed"

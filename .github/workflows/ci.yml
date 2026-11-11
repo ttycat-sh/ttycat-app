@@ -24,7 +24,7 @@ jobs:
       - name: Packages, with retries
         run: |
           for wait in 15 30 60 120 0; do
-            xcodebuild -resolvePackageDependencies -project ttycat.xcodeproj -derivedDataPath build/xcode && exit 0
+            ./build.sh packages && exit 0
             [ "$wait" = 0 ] || { echo "retrying in ${wait}s"; sleep "$wait"; }
           done
           exit 1
