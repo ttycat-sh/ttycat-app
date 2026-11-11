@@ -71,6 +71,7 @@ enum AppMenu {
     let bar = NSMenu()
     bar.addItem(submenu("ttycat", [
       item("About ttycat", #selector(Actions.about)),
+      item("Check for Updates\u{2026}", #selector(Actions.checkForUpdates)),
       .separator(),
       item("Settings\u{2026}", #selector(Actions.settings), ","),
       .separator(),
@@ -103,6 +104,7 @@ enum AppMenu {
   static func statusItem() -> NSMenu {
     let menu = NSMenu()
     menu.addItem(item("Settings\u{2026}", #selector(Actions.settings), ","))
+    menu.addItem(item("Check for Updates\u{2026}", #selector(Actions.checkForUpdates)))
     menu.addItem(.separator())
     menu.addItem(item("Quit ttycat", #selector(Actions.quit), "q"))
     return menu
@@ -144,13 +146,20 @@ enum AppMenu {
   }
 
   /// What the menus do. An object, because a menu item needs one to send to.
-  final class Actions: NSObject {
+  final class Actions: NSObject, NSMenuItemValidation {
     static let shared = Actions()
     weak var model: TTYCatModel?
+
+    /// A build of your own doesn't update itself: there, the item is grey.
+    func validateMenuItem(_ item: NSMenuItem) -> Bool {
+      guard item.action == #selector(checkForUpdates) else { return true }
+      return MainActor.assumeIsolated { model?.appUpdater.isActive ?? false }
+    }
 
     @objc func settings() { MainActor.assumeIsolated { model?.openSettings() } }
     @objc func about() { MainActor.assumeIsolated { model?.showSettings(WindowPanes.about) } }
     @objc func quit() { MainActor.assumeIsolated { AppMenu.quit() } }
+    @objc func checkForUpdates() { MainActor.assumeIsolated { model?.appUpdater.check() } }
   }
 }
 
