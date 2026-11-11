@@ -1,7 +1,7 @@
-# Built by build.sh and swift
+# Built by build.sh and Xcode
 build/
-.build/
-.swiftpm/
+xcuserdata/
+*.xcuserstate
 .vendor/
 
 # An extended build's sources, copied in for the length of its build: see Extensions.swift.

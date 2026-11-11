@@ -264,7 +264,6 @@ struct PetPage: View {
 /// How far Bit has come, and what the next level brings: the board's home screen says the same.
 struct LevelProgress: View {
   let pet: PetInfo
-  private let cells = 12
 
   var body: some View {
     VStack(alignment: .leading, spacing: 3) {
@@ -273,12 +272,22 @@ struct LevelProgress: View {
         Spacer()
         Text("\(pet.age) day\(pet.age == 1 ? "" : "s") old").font(Pixel.small).foregroundStyle(Palette.muted)
       }
-      HStack(spacing: 2) {
-        ForEach(0..<cells, id: \.self) { i in
-          Rectangle().fill(i < pet.progress(of: cells) ? Palette.orange : Palette.dotOff).frame(height: 8)
-        }
-      }
+      LevelBar(pet: pet)
       Text(pet.nextKeepsake).font(Pixel.small).foregroundStyle(Palette.muted).lineLimit(1)
+    }
+  }
+}
+
+/// In blocks, like the board's meters.
+struct LevelBar: View {
+  let pet: PetInfo
+  private let cells = 12
+
+  var body: some View {
+    HStack(spacing: 2) {
+      ForEach(0..<cells, id: \.self) { i in
+        Rectangle().fill(i < pet.progress(of: cells) ? Palette.orange : Palette.dotOff).frame(height: 8)
+      }
     }
   }
 }

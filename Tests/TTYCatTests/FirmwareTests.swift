@@ -192,3 +192,16 @@ private func withCore(_ core: CoreInfo, flash state: String = "idle") -> DaemonS
   #expect(label(UpdatesInfo(check: false, checked: 1_794_298_870)) == "0.11.5, update check off")
   #expect(label(nil) == "0.11.5")
 }
+
+@Test func aMacThatNeverHadABoardIsNeverToldAboutOne() {
+  let none = BoardInfo(connected: false, port: nil, fw: nil, name: nil, outdated: false, silent: [], probing: false)
+  var serial = none  // an Arduino, say: it never says hello
+  serial.silent = ["/dev/cu.usbmodem1101"]
+  #expect(!TTYCatModel.boardMatters(everSeen: false, board: nil))
+  #expect(!TTYCatModel.boardMatters(everSeen: false, board: none))
+  #expect(!TTYCatModel.boardMatters(everSeen: false, board: serial))
+  #expect(TTYCatModel.boardMatters(everSeen: true, board: serial))  // a board that stopped answering can still be reinstalled
+  var here = none
+  here.connected = true
+  #expect(TTYCatModel.boardMatters(everSeen: false, board: here))
+}

@@ -123,7 +123,7 @@ enum FirmwarePlan: Equatable {
     return flash.tool ? .update(from: fw, to: image.version) : .noTool(to: image.version)
   }
 
-  /// Worth pointing out on the Setup tab.
+  /// Worth pointing out on the panel's gear.
   var wantsAttention: Bool {
     switch self {
     case .update, .unknownDevice: return true

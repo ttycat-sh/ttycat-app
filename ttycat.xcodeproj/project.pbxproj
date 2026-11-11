@@ -1,0 +1,489 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9726ED3012CB3024FFEFE5D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 4836236735D07B65537A7059 /* Sparkle */; };
+		E2EFE93B3637277C06D6B3CF /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 770DD82FF3058C9EBB7CAA04 /* Sparkle */; };
+		2A264AE03394C55ABD398072 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 9271F8AFBFF83DB0C9743D85 /* Sparkle */; };
+		5E977155DFA34ABE5E3477A3 /* libTTYCat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAC9FCCC444CF7A1A1E831AA /* libTTYCat.a */; };
+		59B8730C82481A7183C946BF /* libTTYCat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAC9FCCC444CF7A1A1E831AA /* libTTYCat.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E0511810F7D19861CCF3FA10 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B0AB5DC349016EC59C612A6;
+			remoteInfo = TTYCatKit;
+		};
+		B5347C70C81E62D5D019C8FB = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B0AB5DC349016EC59C612A6;
+			remoteInfo = TTYCatKit;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		FAC9FCCC444CF7A1A1E831AA /* libTTYCat.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTTYCat.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		4ECAC4C61F65F976BA47893E /* ttycat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ttycat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A8D38221A0917D094A10EA9C /* TTYCatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TTYCatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F9029FADA4943D72A5210AA0 /* Sources/TTYCat */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Sources/TTYCat;
+			sourceTree = "<group>";
+		};
+		0FE3C73F02347A26360D82EF /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
+		13C77465A23800AAF8B63D0A /* Tests/TTYCatTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Tests/TTYCatTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D0BF6AE197CC5CC1F24022BB = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9726ED3012CB3024FFEFE5D5,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		786B9BE22AFD2E923DE9C222 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E977155DFA34ABE5E3477A3,
+				E2EFE93B3637277C06D6B3CF,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5F319C7736759B0D20BC6C27 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				59B8730C82481A7183C946BF,
+				2A264AE03394C55ABD398072,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2B731CEFC6751AAE0EC69B98 = {
+			isa = PBXGroup;
+			children = (
+				0FE3C73F02347A26360D82EF /* App */,
+				F9029FADA4943D72A5210AA0 /* Sources/TTYCat */,
+				13C77465A23800AAF8B63D0A /* Tests/TTYCatTests */,
+				86024CAD1E83101D97359D73 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		86024CAD1E83101D97359D73 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FAC9FCCC444CF7A1A1E831AA /* libTTYCat.a */,
+				4ECAC4C61F65F976BA47893E /* ttycat.app */,
+				A8D38221A0917D094A10EA9C /* TTYCatTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0B0AB5DC349016EC59C612A6 /* TTYCatKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 31229DF94B395BB63C5AE4FF /* Build configuration list for PBXNativeTarget "TTYCatKit" */;
+			buildPhases = (
+				4F9D965617A5E746E968896D,
+				D0BF6AE197CC5CC1F24022BB,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F9029FADA4943D72A5210AA0,
+			);
+			name = TTYCatKit;
+			packageProductDependencies = (
+				4836236735D07B65537A7059 /* Sparkle */,
+			);
+			productName = TTYCatKit;
+			productReference = FAC9FCCC444CF7A1A1E831AA;
+			productType = "com.apple.product-type.library.static";
+		};
+		E855A13C2C860ABB41388A63 /* ttycat */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4BD0BFBDE0D101169D09F7D3 /* Build configuration list for PBXNativeTarget "ttycat" */;
+			buildPhases = (
+				EC9C67D68093A0E9CC72275E,
+				786B9BE22AFD2E923DE9C222,
+				295AED4B6C642361E88EC640,
+				557D7A0F308A6DE6C478E3F4,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E1BAC628BB422C2C6C9A816E,
+			);
+			fileSystemSynchronizedGroups = (
+				0FE3C73F02347A26360D82EF,
+			);
+			name = ttycat;
+			packageProductDependencies = (
+				770DD82FF3058C9EBB7CAA04 /* Sparkle */,
+			);
+			productName = ttycat;
+			productReference = 4ECAC4C61F65F976BA47893E;
+			productType = "com.apple.product-type.application";
+		};
+		3C0649E132FBEEA89D254F57 /* TTYCatTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4B3F45B3311C40E070D9B57 /* Build configuration list for PBXNativeTarget "TTYCatTests" */;
+			buildPhases = (
+				4C68C5CBD15E4C51C7A645A6,
+				5F319C7736759B0D20BC6C27,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F76AB56209895700BA1E6853,
+			);
+			fileSystemSynchronizedGroups = (
+				13C77465A23800AAF8B63D0A,
+			);
+			name = TTYCatTests;
+			packageProductDependencies = (
+				9271F8AFBFF83DB0C9743D85 /* Sparkle */,
+			);
+			productName = TTYCatTests;
+			productReference = A8D38221A0917D094A10EA9C;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+			};
+			buildConfigurationList = D21051CA55C4951578649475 /* Build configuration list for PBXProject "ttycat" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2B731CEFC6751AAE0EC69B98;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F45FDBF94F63A717DF2F3E8B /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 86024CAD1E83101D97359D73 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E855A13C2C860ABB41388A63 /* ttycat */,
+				0B0AB5DC349016EC59C612A6 /* TTYCatKit */,
+				3C0649E132FBEEA89D254F57 /* TTYCatTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		295AED4B6C642361E88EC640 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		557D7A0F308A6DE6C478E3F4 /* The daemon and the fonts */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "The daemon and the fonts";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/tools/assemble_app.sh\" \"$TARGET_BUILD_DIR/$WRAPPER_NAME\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4F9D965617A5E746E968896D = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC9C67D68093A0E9CC72275E = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C68C5CBD15E4C51C7A645A6 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E1BAC628BB422C2C6C9A816E = {
+			isa = PBXTargetDependency;
+			target = 0B0AB5DC349016EC59C612A6 /* TTYCatKit */;
+			targetProxy = E0511810F7D19861CCF3FA10;
+		};
+		F76AB56209895700BA1E6853 = {
+			isa = PBXTargetDependency;
+			target = 0B0AB5DC349016EC59C612A6 /* TTYCatKit */;
+			targetProxy = B5347C70C81E62D5D019C8FB;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0DAD1609FF21DFE9FCDE033B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BE2A70055679D1F0D48906A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		0F6EB0F3CD24B9CFD7B62333 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				PRODUCT_NAME = TTYCat;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		CEFD91A1538CDFAB05F5B209 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				PRODUCT_NAME = TTYCat;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		9EBE43D74F0F67CF014F5AFB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 0;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Info.plist";
+				INFOPLIST_KEY_LSMinimumSystemVersion = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sh.ttycat.app;
+				PRODUCT_MODULE_NAME = TTYCatApp;
+				PRODUCT_NAME = ttycat;
+			};
+			name = Debug;
+		};
+		407960AF7377278B24F54182 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 0;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Info.plist";
+				INFOPLIST_KEY_LSMinimumSystemVersion = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sh.ttycat.app;
+				PRODUCT_MODULE_NAME = TTYCatApp;
+				PRODUCT_NAME = ttycat;
+			};
+			name = Release;
+		};
+		C1A229F2639383E8FC267F23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = sh.ttycat.tests;
+				PRODUCT_NAME = TTYCatTests;
+			};
+			name = Debug;
+		};
+		49A8EEF200B8CEAC53A59405 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = sh.ttycat.tests;
+				PRODUCT_NAME = TTYCatTests;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D21051CA55C4951578649475 /* Build configuration list for PBXProject "ttycat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0DAD1609FF21DFE9FCDE033B /* Debug */,
+				BE2A70055679D1F0D48906A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		31229DF94B395BB63C5AE4FF /* Build configuration list for PBXNativeTarget "TTYCatKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F6EB0F3CD24B9CFD7B62333 /* Debug */,
+				CEFD91A1538CDFAB05F5B209 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4BD0BFBDE0D101169D09F7D3 /* Build configuration list for PBXNativeTarget "ttycat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9EBE43D74F0F67CF014F5AFB /* Debug */,
+				407960AF7377278B24F54182 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4B3F45B3311C40E070D9B57 /* Build configuration list for PBXNativeTarget "TTYCatTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1A229F2639383E8FC267F23 /* Debug */,
+				49A8EEF200B8CEAC53A59405 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F45FDBF94F63A717DF2F3E8B /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4836236735D07B65537A7059 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F45FDBF94F63A717DF2F3E8B /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+		770DD82FF3058C9EBB7CAA04 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F45FDBF94F63A717DF2F3E8B /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+		9271F8AFBFF83DB0C9743D85 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F45FDBF94F63A717DF2F3E8B /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}

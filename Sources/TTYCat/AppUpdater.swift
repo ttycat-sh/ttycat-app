@@ -32,13 +32,13 @@ final class AppUpdater: NSObject {
   }
 
   private var controller: SPUStandardUpdaterController?
-  /// A newer app Sparkle found on its own schedule, waiting for the person: Setup shows it.
+  /// A newer app Sparkle found on its own schedule, waiting for the person: the window's About shows it.
   var ready: ((String?) -> Void)?
 
   var isActive: Bool { controller != nil }
 
   /// Starts checking on Sparkle's schedule, if this is a release. Off when the person turned update
-  /// checks off in Setup: the same setting as the board's.
+  /// checks off in the window: the same setting as the board's.
   func start(checking: Bool) {
     guard controller == nil, let build = Self.build, build.appcast != nil,
           Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") != nil
@@ -89,7 +89,7 @@ extension AppUpdater: SPUUpdaterDelegate {
 
 extension AppUpdater: SPUStandardUserDriverDelegate {
   // A menu bar app: Sparkle doesn't put its window in front of what you're doing on a schedule.
-  // Setup shows the update instead, and a notification says so. Asking for it shows the window.
+  // About shows the update instead, and a notification says so. Asking for it shows the window.
   nonisolated var supportsGentleScheduledUpdateReminders: Bool { true }
 
   nonisolated func standardUserDriverShouldHandleShowingScheduledUpdate(
