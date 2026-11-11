@@ -1,9 +1,15 @@
 #!/bin/sh
-# Builds "ttycat.app" without Xcode (the command line tools are enough).
+# Builds "ttycat.app" with Xcode: ttycat.xcodeproj is the build, and this adds what a project can't know.
 #   ./build.sh            build it into build/
 #   ./build.sh install    also put it in /Applications and start it
+#   ./build.sh test       the app's tests
+#   ./build.sh check      does it compile? (quick)
+#   ./build.sh packages   fetch the Swift packages it's built with (Sparkle), and nothing else: CI retries this
+# Xcode builds the app with its code, fonts, licenses, daemon and icon (tools/assemble_app.sh), so an app
+# run from Xcode is a whole app. Here it also gets the firmware, Python, its version and its signature.
 # The daemon is the daemon/ submodule (git submodule update --init). The firmware it carries comes from a
 # ttycat-firmware checkout beside this one, or TTYCAT_FIRMWARE_DIR.
+# TTYCAT_CONDITIONS: compilation conditions an extended build adds, such as TTYCAT_PRO: see Extensions.swift.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -12,16 +18,35 @@ FW_SRC=${TTYCAT_FIRMWARE_DIR:-$(dirname "$HERE")/ttycat-firmware}
 APP="$HERE/build/ttycat.app"
 
 cd "$HERE"
-# An extended build adds its flags and its sources: see Extensions.swift.
-swift build -c release ${TTYCAT_SWIFT_ARGS:-}
-BINDIR=$(swift build -c release ${TTYCAT_SWIFT_ARGS:-} --show-bin-path)
+# Xcode itself, even where the command line tools are what's selected.
+if [ -z "${DEVELOPER_DIR:-}" ] && ! xcode-select -p 2>/dev/null | grep -q '\.app/'; then
+  [ -d /Applications/Xcode.app ] || { echo "Xcode is needed: install it, or set DEVELOPER_DIR" >&2; exit 1; }
+  export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
+xcode() {
+  if [ -n "${TTYCAT_CONDITIONS:-}" ]; then
+    set -- "$@" "SWIFT_ACTIVE_COMPILATION_CONDITIONS=\$(inherited) $TTYCAT_CONDITIONS"
+  fi
+  xcodebuild -quiet -project "$HERE/ttycat.xcodeproj" -scheme ttycat -derivedDataPath "$HERE/build/xcode" \
+    -destination 'platform=macOS,arch=arm64' "$@"
+}
+case "${1:-}" in
+  packages)
+    xcode -resolvePackageDependencies
+    exit 0 ;;
+  test)
+    xcode test
+    echo "tests passed"
+    exit 0 ;;
+  check)
+    xcode -configuration Debug build
+    exit 0 ;;
+esac
+xcode -configuration Release build
 
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
-cp "$BINDIR/TTYCat" "$APP/Contents/MacOS/ttycat"
-# Sparkle, which a release updates itself with (AppUpdater.swift). Copied as it is, links and all.
-ditto "$BINDIR/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
-cp "$ROOT"/tools/fonts/*.ttf "$ROOT"/tools/fonts/OFL-*.txt "$APP/Contents/Resources/"
+ditto "$HERE/build/xcode/Build/Products/Release/ttycat.app" "$APP"
+PLIST="$APP/Contents/Info.plist"
 
 # The firmware this app can put on the board. It's only ever the last build: the firmware isn't built here.
 # release.sh gives it the signed release image instead (TTYCAT_FIRMWARE_IMAGE), as is: the daemon
@@ -55,10 +80,8 @@ else
   echo "warning: no core release found; this app can't update boards of people's own" >&2
 fi
 
-# The daemon, and the Python to run it: the app needs nothing else on the Mac. Without vendor.sh
-# it still builds, and uses the system's Python, for working on it. A release needs it: see release.sh.
-mkdir -p "$APP/Contents/Resources/daemon"
-cp "$ROOT"/daemon/*.py "$ROOT/daemon/agent_rules.json" "$ROOT/daemon/agent_rules.LICENSE" "$APP/Contents/Resources/daemon/"
+# The Python to run the daemon with: the app needs nothing else on the Mac. Without vendor.sh it still
+# builds, and uses the system's Python, for working on it. A release needs it: see release.sh.
 # A release has a version, from its tag: TTYCAT_VERSION, X.Y.Z for prod or X.Y.Z-dev.N for dev. Then the
 # daemon gets build.json, and ignores the developer overrides; the keys it trusts are that environment's.
 # Without one it's a developer's build, 0.0.0. See tools/app_build.py.
@@ -68,14 +91,16 @@ $INFO
 EOF_INFO
 # A release checks for a new app every hour, Sparkle's shortest, and at start if the last check is older. It installs only what its environment's app update key
 # signed. A developer's build has no key, so Sparkle never starts in it.
-SPARKLE=""
+plutil -replace CFBundleShortVersionString -string "$SHORT" "$PLIST"
+plutil -replace CFBundleVersion -string "$BUILD" "$PLIST"
+plutil -replace TTYCatVersion -string "${TTYCAT_VERSION:-developer build}" "$PLIST"
+plutil -replace TTYCatBuilt -float "$(date +%s)" "$PLIST"
 if [ "$SPARKLE_KEY" != "-" ]; then
-  SPARKLE="<key>SUPublicEDKey</key><string>$SPARKLE_KEY</string>
-  <key>SUEnableAutomaticChecks</key><true/>
-  <key>SUScheduledCheckInterval</key><integer>3600</integer>
-  <key>SUEnableSystemProfiling</key><false/>"
+  plutil -replace SUPublicEDKey -string "$SPARKLE_KEY" "$PLIST"
+  plutil -replace SUEnableAutomaticChecks -bool YES "$PLIST"
+  plutil -replace SUScheduledCheckInterval -integer 3600 "$PLIST"
+  plutil -replace SUEnableSystemProfiling -bool NO "$PLIST"
 fi
-cp "$ROOT/LICENSE" "$ROOT/NOTICE" "$ROOT/THIRD_PARTY.md" "$APP/Contents/Resources/"
 # Anything an extended build adds to the app, such as a daemon plugin: see daemon/plugins.py.
 if [ -n "${TTYCAT_EXTRA_RESOURCES:-}" ]; then
   ditto "$TTYCAT_EXTRA_RESOURCES" "$APP/Contents/Resources"
@@ -88,34 +113,6 @@ if [ -d "$HERE/.vendor/python" ]; then
 else
   echo "warning: no bundled Python (run ./vendor.sh): this build uses the system's" >&2
 fi
-
-cat > "$APP/Contents/Info.plist" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key><string>ttycat</string>
-  <key>CFBundleDisplayName</key><string>ttycat</string>
-  <key>CFBundleIdentifier</key><string>sh.ttycat.app</string>
-  <key>CFBundleExecutable</key><string>ttycat</string>
-  <key>CFBundleIconFile</key><string>AppIcon</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>$SHORT</string>
-  <key>CFBundleVersion</key><string>$BUILD</string>
-  <key>TTYCatVersion</key><string>${TTYCAT_VERSION:-developer build}</string>
-  $SPARKLE
-  <key>LSMinimumSystemVersion</key><string>14.0</string>
-  <key>LSUIElement</key><true/>
-  <key>LSMultipleInstancesProhibited</key><true/>
-  <key>TTYCatBuilt</key><real>$(date +%s)</real>
-</dict>
-</plist>
-EOF
-
-ICONSET="$HERE/build/AppIcon.iconset"
-rm -rf "$ICONSET"
-"$APP/Contents/MacOS/ttycat" --iconset "$ICONSET"
-iconutil -c icns -o "$APP/Contents/Resources/AppIcon.icns" "$ICONSET"
 
 # Your Apple Development certificate if there is one; otherwise signed for this Mac only.
 # release.sh passes a Developer ID instead. Hardened either way, so a test build behaves like a release.
@@ -130,7 +127,8 @@ if [ -z "${TTYCAT_SIGN_IDENTITY:-}" ]; then
 fi
 IDENTITY=$TTYCAT_SIGN_IDENTITY
 STAMP=${TTYCAT_SIGN_TIMESTAMP:---timestamp=none}
-# Everything that runs is signed on its own, from the inside out.
+# Xcode signed it to run here; what was added since isn't sealed. Everything that runs is signed again
+# on its own, from the inside out.
 find "$APP/Contents/Resources" -type f | while read -r file; do
   case "$(file -b "$file")" in
     *Mach-O*) codesign --force --options runtime "$STAMP" --sign "${IDENTITY:--}" "$file" ;;

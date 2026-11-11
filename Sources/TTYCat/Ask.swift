@@ -10,7 +10,7 @@ private let maxTyped = 1000                        // approvals.MAX_TYPED
 
 struct AskCard: View {
   @EnvironmentObject var m: TTYCatModel
-  @StateObject private var armed = Local(false)
+  @State private var armed = false
   let row: AgentRow
   var position: (at: Int, of: Int)?
 
@@ -18,8 +18,8 @@ struct AskCard: View {
     VStack(alignment: .leading, spacing: 6) {
       header
       switch row.ask {
-      case "approve": ApproveView(row: row, armed: armed.value)
-      case "choice": QuestionsView(row: row, armed: armed.value)
+      case "approve": ApproveView(row: row, armed: armed)
+      case "choice": QuestionsView(row: row, armed: armed)
       default: TerminalAskView(row: row)
       }
     }
@@ -32,8 +32,10 @@ struct AskCard: View {
       while !Task.isCancelled, !HandsOff.clear(now: Date(), until: m.handsOffUntil, lastClick: m.lastPanelClick) {
         try? await Task.sleep(for: .milliseconds(100))
       }
-      armed.value = true
+      armed = true
+      m.armedAsk = row.rev  // the D key works when the buttons do
     }
+    .onDisappear { if m.armedAsk == row.rev { m.armedAsk = nil } }
   }
 
   private var header: some View {
@@ -75,10 +77,13 @@ private struct ApproveView: View {
     }
     CodeBox(text: row.body ?? "", diff: row.file != nil, shell: row.tool == "BASH")
     HStack(spacing: 6) {
+      TrailingInWindow()
+      // The same weight: neither answer is the one the eye is led to.
       ChoiceButton(title: "Deny", icon: PixelIcon.cross, enabled: armed && !busy) {
         m.answer(row, action: "deny")
       }
-      ChoiceButton(title: busy ? "Sending" : "Allow", icon: PixelIcon.check, loud: true, enabled: armed && !busy) {
+      .help("Deny (D)")
+      ChoiceButton(title: busy ? "Sending" : "Allow", icon: PixelIcon.check, tint: Palette.green, enabled: armed && !busy) {
         m.answer(row, action: "allow")
       }
     }
@@ -86,25 +91,33 @@ private struct ApproveView: View {
 }
 
 struct ChoiceButton: View {
+  @Environment(\.inWindow) private var inWindow
   let title: String
   let icon: [UInt8]
   var loud = false
+  var tint = Palette.orange  // the icon's colour, on a button that isn't loud
   let enabled: Bool
   let action: () -> Void
 
   var body: some View {
     Button(action: action) {
       HStack(spacing: 6) {
-        PixelIcon(rows: icon, scale: 2, color: !enabled ? Palette.faint : loud ? Palette.black : Palette.orange)
+        PixelIcon(rows: icon, scale: 2, color: !enabled ? Palette.faint : loud ? Palette.black : tint)
         Text(title.uppercased()).font(Pixel.button)
           .foregroundStyle(!enabled ? Palette.faint : loud ? Palette.black : Palette.white)
       }
-      .frame(maxWidth: .infinity, minHeight: 36)
+      .frame(maxWidth: inWindow ? 180 : .infinity, minHeight: 36)
       .pixelBox(loud && enabled ? Palette.orange : Palette.tile, border: loud && enabled ? nil : Palette.line)
     }
     .buttonStyle(PixelPress())
     .disabled(!enabled)
   }
+}
+
+/// In the window, a row of buttons sits at the end of its line, as a Mac's do. In the panel they fill it.
+struct TrailingInWindow: View {
+  @Environment(\.inWindow) private var inWindow
+  var body: some View { if inWindow { Spacer(minLength: 0) } }
 }
 
 private struct HeightKey: PreferenceKey {
@@ -116,20 +129,20 @@ private struct HeightKey: PreferenceKey {
 /// by a wrong guess at how the text wraps. A window that hugs its content can't size a plain
 /// ScrollView: left alone, it collapses.
 struct FitScroll<Content: View>: View {
-  @StateObject private var height = Local<CGFloat>(0)
+  @State private var height: CGFloat = 0
   let tallest: CGFloat
   var hint: String?
   @ViewBuilder let content: Content
 
-  private var overflows: Bool { height.value > tallest }
+  private var overflows: Bool { height > tallest }
 
   var body: some View {
     VStack(alignment: .trailing, spacing: 2) {
       ScrollView(.vertical, showsIndicators: overflows) {
-        content.background(GeometryReader { Color.clear.preference(key: HeightKey.self, value: $0.size.height) })
+        content.background(GeometryReader { Color.clear.preference(key: HeightKey.self, value: $0.size.height) }).pixelScroller()
       }
-      .frame(height: height.value == 0 ? 40 : min(height.value, tallest))
-      .onPreferenceChange(HeightKey.self) { height.value = $0 }
+      .frame(height: height == 0 ? 40 : min(height, tallest))
+      .onPreferenceChange(HeightKey.self) { height = $0 }
       if overflows, let hint {
         Text(hint).font(Pixel.small).foregroundStyle(Palette.orange)
       }
@@ -150,13 +163,13 @@ struct CodeBox: View {
       VStack(alignment: .leading, spacing: 0) {
         ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
           Text(line.isEmpty ? " " : line)
-            .font(Pixel.body)
+            .font(Pixel.code)
             .foregroundStyle(color(of: line))
             .fixedSize(horizontal: false, vertical: true)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(6)
+      .padding(8)
       .textSelection(.enabled)
       .pixelBox(Palette.code, border: Palette.line)
     }
@@ -183,7 +196,10 @@ private struct TerminalAskView: View {
     Text(row.note ?? "Answer this one in the terminal")
       .font(Pixel.small).foregroundStyle(Palette.muted).lineLimit(2)
     if row.canOpen {
-      ChoiceButton(title: "Open in terminal", icon: PixelIcon.right, loud: true, enabled: true) { m.open(row) }
+      HStack(spacing: 6) {
+        TrailingInWindow()
+        ChoiceButton(title: "Open in terminal", icon: PixelIcon.right, loud: true, enabled: true) { m.open(row) }
+      }
     }
   }
 }
@@ -200,9 +216,23 @@ private final class Answers: ObservableObject {
   }
 }
 
+/// One question at a time, so the button that moves on is always in reach. No side effects.
+enum QuestionFlow {
+  static func answered(picked: Set<Int>, typed: String) -> Bool {
+    !picked.isEmpty || !typed.trimmingCharacters(in: .whitespaces).isEmpty
+  }
+
+  /// Nothing is sent until every question has an answer, whichever one is on screen.
+  static func ready(picked: [Set<Int>], typed: [String]) -> Bool {
+    !picked.isEmpty && picked.count == typed.count
+      && picked.indices.allSatisfy { answered(picked: picked[$0], typed: typed[$0]) }
+  }
+}
+
 private struct QuestionsView: View {
   @EnvironmentObject var m: TTYCatModel
   @StateObject private var answers: Answers
+  @State private var step = 0
   let row: AgentRow
   let armed: Bool
 
@@ -213,23 +243,33 @@ private struct QuestionsView: View {
   }
 
   private var questions: [Question] { row.qs ?? [] }
-  private var ready: Bool {
-    !questions.isEmpty && questions.indices.allSatisfy {
-      !answers.picked[$0].isEmpty || !answers.typed[$0].trimmingCharacters(in: .whitespaces).isEmpty
-    }
-  }
+  private var ready: Bool { QuestionFlow.ready(picked: answers.picked, typed: answers.typed) }
   private var busy: Bool { m.answering == row.rev }
 
   var body: some View {
-    FitScroll(tallest: 400, hint: "scroll for the rest") {
-      VStack(alignment: .leading, spacing: 10) {
-        ForEach(Array(questions.enumerated()), id: \.offset) { index, question in
-          questionBlock(index, question)
+    let index = min(step, max(questions.count - 1, 0))
+    if questions.count > 1 {
+      Caps("Question \(index + 1) of \(questions.count)", color: Palette.muted2)
+    }
+    if questions.indices.contains(index) {
+      FitScroll(tallest: 400, hint: "scroll for the rest") {
+        questionBlock(index, questions[index])
+      }
+      .id(index)
+    }
+    HStack(spacing: 6) {
+      TrailingInWindow()
+      if index > 0 {
+        ChoiceButton(title: "Back", icon: PixelIcon.left, enabled: !busy) { step = index - 1 }
+      }
+      if index < questions.count - 1 {
+        let answered = QuestionFlow.answered(picked: answers.picked[index], typed: answers.typed[index])
+        ChoiceButton(title: "Next", icon: PixelIcon.right, loud: true, enabled: answered) { step = index + 1 }
+      } else {
+        ChoiceButton(title: busy ? "Sending" : "Send answer", icon: PixelIcon.right, loud: true, enabled: armed && ready && !busy) {
+          m.answer(row, action: "answer", picks: picks)
         }
       }
-    }
-    ChoiceButton(title: busy ? "Sending" : "Send answer", icon: PixelIcon.right, loud: true, enabled: armed && ready && !busy) {
-      m.answer(row, action: "answer", picks: picks)
     }
   }
 

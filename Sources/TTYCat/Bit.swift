@@ -170,7 +170,7 @@ struct BitView: View {
 // ---------------------------------------------------------------- the menu bar
 
 enum MenuIcon {
-  /// Faded = nothing's connected. Otherwise plain, so it follows the menu bar's own colour,
+  /// Faded = nothing is going on: no agent at work, or no daemon at all. Otherwise plain, so it follows the menu bar's own colour,
   /// until something needs you: then it's orange, with how many beside it.
   static func make(pose: BitPose, tick: Int, faded: Bool, needs: Int) -> NSImage {
     let cells = bitCells(pose, tick: tick)

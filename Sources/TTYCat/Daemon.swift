@@ -25,9 +25,79 @@ struct AgentRow: Decodable, Identifiable {
   // For notifications:
   var foc: Bool?     // its pane is the one focused in herdr
   var said: String?  // the last thing it said this turn
+  // What it has going beside its own turn. Missing: its kind of agent can't tell (daemon/harness.py).
+  var sub: Int?      // subagents running
+  var sh: Int?       // shells it has left open
+  var guess: [String]?  // which of those are estimates
+  var prs: [PullLink]?  // pull and merge requests it made lately, newest first
 
   var needsYou: Bool { s == "blocked" || s == "error" }
   var canOpen: Bool { a != "--" }  // the row for a machine that can't be reached
+}
+
+/// A pull or merge request an agent made, as its own log names it.
+struct PullLink: Decodable, Equatable, Identifiable {
+  let url: String
+  let kind: String  // pr | mr
+  let repo: String
+  let n: Int
+
+  var id: String { url }
+  var label: String { kind == "mr" ? "MR !\(n)" : "PR #\(n)" }
+  var spoken: String { "\(kind == "mr" ? "merge request" : "pull request") \(n) in \(repo)" }
+
+  /// Where it opens. It came out of an agent's log, so only a web address that names a host is ever opened.
+  var destination: URL? {
+    guard let found = URL(string: url), found.scheme == "https", let host = found.host, !host.isEmpty else { return nil }
+    return found
+  }
+}
+
+/// An agent's subagents and open shells, where there are any to show. A count that isn't known is
+/// never shown as none, and an estimate says it is one.
+struct AgentCounts: Equatable {
+  struct Count: Equatable {
+    let n: Int
+    let guessed: Bool
+    var text: String { guessed ? "~\(n)" : "\(n)" }
+  }
+
+  let subagents: Count?
+  let shells: Count?
+
+  init(_ row: AgentRow) {
+    let count = { (n: Int?, key: String) -> Count? in
+      guard let n, n > 0 else { return nil }
+      return Count(n: n, guessed: row.guess?.contains(key) ?? false)
+    }
+    subagents = count(row.sub, "sub")
+    shells = count(row.sh, "sh")
+  }
+
+  var isEmpty: Bool { subagents == nil && shells == nil }
+
+  /// In words, for a tooltip and VoiceOver.
+  var spoken: String {
+    var parts: [String] = []
+    if let c = subagents { parts.append("\(c.guessed ? "about " : "")\(c.n) \(c.n == 1 ? "subagent" : "subagents") running") }
+    if let c = shells { parts.append("\(c.guessed ? "about " : "")\(c.n) \(c.n == 1 ? "shell" : "shells") open") }
+    return parts.joined(separator: ", ")
+  }
+}
+
+/// The order agents are shown in, in the window and the panel: what needs you, then what's at work, then
+/// all the rest by how lately each did anything. One that has finished doesn't jump the queue: its dot
+/// says it's done. The board keeps the daemon's order, which puts a finished one first.
+enum AgentOrder {
+  static func shown(_ rows: [AgentRow]) -> [AgentRow] {
+    let group = { (row: AgentRow) -> Int in row.needsYou ? 0 : row.s == "working" ? 1 : 2 }
+    return rows.enumerated().sorted { a, b in
+      let (x, y) = (group(a.element), group(b.element))
+      if x != y { return x < y }
+      let (m, n) = (a.element.age ?? .infinity, b.element.age ?? .infinity)
+      return m != n ? m < n : a.offset < b.offset  // the daemon's order settles a tie
+    }.map(\.element)
+  }
 }
 
 struct QuestionOption: Decodable {
@@ -49,6 +119,17 @@ struct ActivityItem: Decodable {
 
 struct ActivityReply: Decodable {
   let items: [ActivityItem]
+  var about: AgentAbout?
+}
+
+/// What's known of one agent beside its state. Whatever its kind of agent doesn't say is missing.
+struct AgentAbout: Decodable, Equatable {
+  var model: String?
+  var ctx: Int?      // tokens its last reply was given to read
+  var branch: String?
+  var steps: Int?    // tools used since your last prompt
+  var cwd: String?
+  var up: Int?       // seconds since it was started
 }
 
 struct PetInfo: Decodable {
@@ -346,7 +427,13 @@ final class Supervisor: @unchecked Sendable {  // only hook() runs off the main 
 
   /// One of the daemon's own commands, to its end. Off the main thread.
   func tool(_ arguments: [String]) -> (ok: Bool, installed: Bool) {
-    guard let python = Self.python, let daemonDir, script != nil else { return (false, false) }
+    guard let text = toolOutput(arguments).map({ String(decoding: $0, as: UTF8.self) }) else { return (false, false) }
+    return (true, text.contains(": installed"))
+  }
+
+  /// What one of the daemon's commands printed, or nil if it failed.
+  func toolOutput(_ arguments: [String]) -> Data? {
+    guard let python = Self.python, let daemonDir, script != nil else { return nil }
     let process = Process()
     let output = Pipe()
     process.executableURL = URL(fileURLWithPath: python)
@@ -357,10 +444,9 @@ final class Supervisor: @unchecked Sendable {  // only hook() runs off the main 
     process.environment = env
     process.standardOutput = output
     process.standardError = FileHandle.nullDevice
-    do { try process.run() } catch { return (false, false) }
-    let text = String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+    do { try process.run() } catch { return nil }
+    let data = output.fileHandleForReading.readDataToEndOfFile()
     process.waitUntilExit()
-    guard process.terminationStatus == 0 else { return (false, false) }
-    return (true, text.contains(": installed"))
+    return process.terminationStatus == 0 ? data : nil
   }
 }

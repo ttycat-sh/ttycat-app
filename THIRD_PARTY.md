@@ -9,7 +9,7 @@ What ttycat carries or builds on, and under which license. Check this list befor
 | [pyserial](https://github.com/pyserial/pyserial) 3.5 | Used by esptool | BSD-3-Clause | Bundled by `vendor.sh` |
 | [IntelHex](https://github.com/python-intelhex/intelhex) 2.3 | Used by esptool | BSD-3-Clause | Bundled by `vendor.sh` |
 | [herdr](https://github.com/herdrdev/herdr)'s agent detection rules, and a port of its engine | What an agent's screen means | Apache-2.0: `daemon/agent_rules.LICENSE` | In the daemon it carries: `daemon/agent_rules.json`, `daemon/screen_rules.py` |
-| Press Start 2P, VT323, Silkscreen, Pixelify Sans | The look of the app and board | SIL OFL 1.1: `tools/fonts/OFL-*.txt` | App resources |
+| Press Start 2P, VT323, Silkscreen, Pixelify Sans, Geist Mono | The look of the app and board | SIL OFL 1.1: `tools/fonts/OFL-*.txt` | App resources |
 | [Sparkle](https://github.com/sparkle-project/Sparkle) 2.10.1 | Updating the app | MIT | `Contents/Frameworks/Sparkle.framework` |
 | [ESP-IDF](https://github.com/espressif/esp-idf), esp_codec_dev | The firmware it carries, built in ttycat-firmware | Apache-2.0; see each component | Firmware image |
 

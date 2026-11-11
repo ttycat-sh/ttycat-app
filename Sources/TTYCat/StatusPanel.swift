@@ -65,7 +65,6 @@ final class StatusPanel: NSObject {
     contentRect: NSRect(x: 0, y: 0, width: panelWidth, height: 300),
     styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
   private var watchers: [AnyCancellable] = []
-  private static let escapeKey: UInt16 = 53
   private var anchor: (button: CGRect, visible: CGRect)?  // fixed while open: the icon widens with a badge
   private var clicks: Any?
   private var keys: Any?
@@ -83,14 +82,15 @@ final class StatusPanel: NSObject {
     panel.hidesOnDeactivate = false
     panel.isMovable = false
     panel.hasShadow = true
-    panel.isOpaque = true
-    panel.backgroundColor = NSColor(Palette.black)
+    panel.isOpaque = false  // its corners are round: the content draws its own ground
+    panel.backgroundColor = .clear
     panel.isReleasedWhenClosed = false
     panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
 
     if let button = item.button {
       button.target = self
       button.action = #selector(toggle)
+      button.sendAction(on: [.leftMouseUp, .rightMouseUp])
       button.setAccessibilityTitle("ttycat")
     }
     model.$icon.sink { [weak self] in self?.item.button?.image = $0 }.store(in: &watchers)
@@ -102,11 +102,26 @@ final class StatusPanel: NSObject {
   }
 
   @objc private func toggle() {
-    if isOpen { close() } else { open() }
+    if NSApp.currentEvent?.type == .rightMouseUp {
+      showMenu()
+    } else if isOpen {
+      close()
+    } else {
+      open()
+    }
   }
 
-  /// Built new each time: a prompt's buttons get their full delay before they work, and Setup reads
-  /// its settings again, every time the panel opens.
+  /// A right click: the two things a menu bar icon is expected to offer. Set only for this click,
+  /// or the menu would take every click after it.
+  private func showMenu() {
+    close()
+    item.menu = AppMenu.statusItem()
+    item.button?.performClick(nil)
+    item.menu = nil
+  }
+
+  /// Built new each time: a prompt's buttons get their full delay before they work, every time the
+  /// panel opens.
   func open() {
     guard !isOpen else { return }
     model.panelOpening()
@@ -128,16 +143,20 @@ final class StatusPanel: NSObject {
     clicks = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
       MainActor.assumeIsolated { self?.close() }
     }
-    // Every click in the panel: a prompt's buttons wait until they've stopped.
+    // Every click in the panel: a prompt's buttons wait until they've stopped. One in the app's own
+    // window is a click elsewhere, like any other app's.
     presses = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
-      MainActor.assumeIsolated { self?.model.lastPanelClick = Date() }
+      MainActor.assumeIsolated {
+        guard let self else { return }
+        if event.window === self.panel { self.model.lastPanelClick = Date() } else if event.window != nil { self.close() }
+      }
       return event
     }
-    // Esc, from here: a text field in the panel would otherwise keep it for itself.
+    // Esc, from here: a text field in the panel would otherwise keep it for itself. And the keys that
+    // move around the panel, unless a text field is being typed in: see PanelKeys.
     keys = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-      guard event.keyCode == Self.escapeKey else { return event }
-      MainActor.assumeIsolated { self?.close() }
-      return nil
+      let used = MainActor.assumeIsolated { self?.pressed(event) ?? false }
+      return used ? nil : event
     }
     // As does moving to another app, such as Open in terminal or Cmd-Tab.
     switches = NSWorkspace.shared.notificationCenter.addObserver(
@@ -152,6 +171,18 @@ final class StatusPanel: NSObject {
     ) { [weak self] _ in
       MainActor.assumeIsolated { self?.close() }
     }
+  }
+
+  private func pressed(_ event: NSEvent) -> Bool {
+    let key = PanelKeys.key(
+      code: event.keyCode, characters: event.charactersIgnoringModifiers, flags: event.modifierFlags,
+      typing: panel.firstResponder is NSTextView, repeating: event.isARepeat)
+    guard let key else { return false }
+    if key == .close {
+      close()
+      return true
+    }
+    return model.handle(key)
   }
 
   func close() {
