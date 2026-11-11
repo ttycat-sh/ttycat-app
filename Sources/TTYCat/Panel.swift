@@ -295,6 +295,8 @@ private struct AgentRowView: View {
           Text(ageText(row.age)).font(Pixel.small).foregroundStyle(Palette.muted)
           Caps(row.a ?? "", color: Palette.muted2)
         }
+        // Room for the way to its newest request, which sits over the row: a button can't hold another.
+        if let link = row.prs?.first { PullChip(link: link).hidden() }
         PixelIcon(rows: PixelIcon.right, scale: 1, color: Palette.muted).opacity(pointedAt ? 1 : 0)  // always there: no row shifts
       }
       .padding(.horizontal, 8)
@@ -305,6 +307,9 @@ private struct AgentRowView: View {
     .buttonStyle(PixelPress())
     .disabled(!row.canOpen)
     .onHover { hovering = $0 && row.canOpen }
+    .overlay(alignment: .trailing) {
+      if let link = row.prs?.first { PullChip(link: link).padding(.trailing, 20) }  // clear of the arrow
+    }
     .help([row.n, row.d].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ": "))  // "CC" is Claude
   }
 
@@ -348,6 +353,7 @@ struct AgentPage: View {
         }
         .buttonStyle(PixelPress())
         Spacer(minLength: 4)
+        if let link = row.prs?.first { PullChip(link: link) }  // what it put up for review lately
         Text("\(stateWord) \(ageText(row.age))").font(Pixel.small).foregroundStyle(stateColor)
       }
       if row.s == "blocked" {
