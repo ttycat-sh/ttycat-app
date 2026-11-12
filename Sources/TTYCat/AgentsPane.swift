@@ -285,6 +285,10 @@ struct AgentCard: View {
           Dot(row.s == "idle" ? Palette.faint : row.s == "working" ? Palette.white : tone)
           Caps(state, color: row.s == "idle" ? Palette.faint : row.s == "working" ? Palette.white : tone)
           Spacer(minLength: 4)
+          // What an extension has to say of it: Extensions.cardNotes.
+          if let note = Extensions.cardNote(row) {
+            Text(note).font(Pixel.small).foregroundStyle(Palette.muted2).lineLimit(1)
+          }
           Text(ageText(row.age)).font(Pixel.small).foregroundStyle(Palette.muted)
           // Room for the way to its newest request, which sits over the card: a button can't hold another.
           if let link = row.prs?.first { PullChip(link: link).hidden() }
@@ -301,7 +305,7 @@ struct AgentCard: View {
     .overlay(alignment: .bottomTrailing) {
       if let link = row.prs?.first { PullChip(link: link).padding(12) }
     }
-    .accessibilityLabel("\(row.p ?? "agent"), \(row.n ?? ""), \(state)\(counts.isEmpty ? "" : ", " + counts.spoken)")
+    .accessibilityLabel("\(row.p ?? "agent"), \(row.n ?? ""), \(state)\(counts.isEmpty ? "" : ", " + counts.spoken)\(Extensions.cardNote(row).map { ", " + $0 } ?? "")")
     .accessibilityAddTraits(chosen ? .isSelected : [])
   }
 }

@@ -292,3 +292,41 @@ private let proPanes: [(pane: PaneItem, settings: Bool)] = [
     #expect(Capability.all(agent(can: nil, hook: "broken"))[3].level == .no)
   }
 }
+
+/// What an extension can add to an agent, in the window. The lists are the app's own, so each test
+/// puts back what it found.
+@MainActor @Suite(.serialized) struct AgentExtensions {
+  private let row = AgentRow(id: "p1", s: "working", a: "CC", n: "Claude", p: "shop", ses: "5d6d8b61-343d-4d8b-b463-a82fe6f71940")
+
+  @Test func withNoExtensionAnAgentHasTheAppsOwnTilesAndNoNote() {
+    #expect(Extensions.facts(row, about: nil) == AgentFacts(row).facts)
+    #expect(Extensions.cardNote(row) == nil)
+  }
+
+  @Test func anExtensionsTilesComeAfterTheAppsOwn() {
+    let before = Extensions.agentFacts
+    defer { Extensions.agentFacts = before }
+    Extensions.agentFacts.append { row, about in
+      [AgentFacts.Fact(id: "more", name: "More", value: "\(row.ses ?? "-") \(about?.model ?? "-")", note: "From an extension.")]
+    }
+    Extensions.agentFacts.append { _, _ in [] }
+    let facts = Extensions.facts(row, about: AgentAbout(model: "a-model"))
+    #expect(facts.dropLast() == AgentFacts(row, about: AgentAbout(model: "a-model")).facts[...])
+    #expect(facts.last?.value == "5d6d8b61-343d-4d8b-b463-a82fe6f71940 a-model")
+  }
+
+  @Test func whatExtensionsSayOnACardIsSaidApart() {
+    let before = Extensions.cardNotes
+    defer { Extensions.cardNotes = before }
+    Extensions.cardNotes = [{ _ in "one" }, { _ in nil }, { _ in "" }, { $0.ses == nil ? nil : "two" }]
+    #expect(Extensions.cardNote(row) == "one \u{00B7} two")
+    #expect(Extensions.cardNote(AgentRow(id: "p2", s: "idle")) == "one")
+  }
+
+  @Test func aRowsSessionIsReadFromTheDaemon() throws {
+    let with = try JSONDecoder().decode(AgentRow.self, from: Data(#"{"id":"p1","s":"working","ses":"abc-123"}"#.utf8))
+    #expect(with.ses == "abc-123")
+    let without = try JSONDecoder().decode(AgentRow.self, from: Data(#"{"id":"p1","s":"working"}"#.utf8))
+    #expect(without.ses == nil)  // a daemon from before it said, or an agent that names no session
+  }
+}

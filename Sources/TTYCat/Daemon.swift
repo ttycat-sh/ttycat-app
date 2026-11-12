@@ -30,6 +30,7 @@ struct AgentRow: Decodable, Identifiable {
   var sh: Int?       // shells it has left open
   var guess: [String]?  // which of those are estimates
   var prs: [PullLink]?  // pull and merge requests it made lately, newest first
+  var ses: String?   // its session, as the agent names it: for an extension that knows more of its sessions
 
   var needsYou: Bool { s == "blocked" || s == "error" }
   var canOpen: Bool { a != "--" }  // the row for a machine that can't be reached

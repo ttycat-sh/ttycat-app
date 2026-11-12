@@ -144,7 +144,7 @@ struct AgentDetail: View {
   private func facts(across: Int) -> some View {
     let column = GridItem(.flexible(minimum: 104), spacing: Rhythm.near)
     return LazyVGrid(columns: Array(repeating: column, count: across), alignment: .leading, spacing: Rhythm.near) {
-      ForEach(AgentFacts(row, about: about).facts) { FactTile(fact: $0) }
+      ForEach(Extensions.facts(row, about: about)) { FactTile(fact: $0) }
     }
   }
 
