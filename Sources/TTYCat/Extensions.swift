@@ -25,9 +25,28 @@ struct ExtraPane {
 @MainActor
 enum Extensions {
   /// 2: the window. Setup left the panel, so `setupSections` became `panes`.
-  static let apiVersion = 2
+  /// 3: `agentFacts` and `cardNotes`, and a row's `ses`.
+  static let apiVersion = 3
   static var pages: [ExtraPage] = []
   static var panes: [ExtraPane] = []
+  /// More tiles on an agent's page in the window, after the app's own: what an extension knows of
+  /// that agent. Asked each time the page is drawn, so answer from what's already at hand. `about`
+  /// is what the daemon said of the agent, once it has.
+  static var agentFacts: [@MainActor (AgentRow, AgentAbout?) -> [AgentFacts.Fact]] = []
+  /// A few words on an agent's card in the window, beside how long it's been as it is. Asked each
+  /// time the card is drawn. nil: nothing to say of this one.
+  static var cardNotes: [@MainActor (AgentRow) -> String?] = []
+
+  /// The app's tiles for an agent, then each extension's.
+  static func facts(_ row: AgentRow, about: AgentAbout?) -> [AgentFacts.Fact] {
+    AgentFacts(row, about: about).facts + agentFacts.flatMap { $0(row, about) }
+  }
+
+  /// What extensions say on an agent's card, each one's words apart.
+  static func cardNote(_ row: AgentRow) -> String? {
+    let notes = cardNotes.compactMap { $0(row) }.filter { !$0.isEmpty }
+    return notes.isEmpty ? nil : notes.joined(separator: " \u{00B7} ")
+  }
   static var started: [@MainActor (TTYCatModel) -> Void] = []
   static var polled: [@MainActor (TTYCatModel) -> Void] = []  // once a second
   /// Uninstalling: take away what the extension added outside the app. Run before the daemon stops.
