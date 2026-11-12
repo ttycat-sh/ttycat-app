@@ -185,8 +185,10 @@ struct BoardPane: View {
   }
 
   /// What's sent stays short in the detail: the board's model and versions, never anything about you.
+  /// Off, it says what stops: these checks. An extension may still reach ttycat for something of its
+  /// own, so "nothing is sent" isn't this switch's to promise.
   private func updatesDetail(_ updates: UpdatesInfo) -> String {
-    guard updates.check else { return "Off: nothing is sent to ttycat." }
+    guard updates.check else { return "Off: no update check is sent to ttycat." }
     if !updates.error.isEmpty { return "Couldn't reach ttycat. It tries again within the hour." }
     return "Sends the board's model and versions, and this app's. Nothing else."
   }
