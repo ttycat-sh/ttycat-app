@@ -375,15 +375,30 @@ struct AgentPage: View {
         if let link = row.prs?.first { PullChip(link: link) }  // what it put up for review lately
         Text("\(stateWord) \(ageText(row.age))").font(Pixel.small).foregroundStyle(stateColor)
       }
+      if renaming {
+        // Over whatever else is here: a prompt stays where it is, and can still be answered.
+        AgentNameField(row: row)
+          .padding(8)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .pixelBox(Palette.card, border: Palette.line)
+      }
       if row.s == "blocked" {
         AskCard(row: row).id(row.rev)
-      } else {
+      } else if !renaming {
         title
       }
       recent
-      PixelButton(title: "Open in terminal") { m.open(row) }
+      HStack(spacing: 6) {
+        if !renaming {
+          PixelButton(title: "Rename") { m.startRenaming(row, inWindow: inWindow) }.fixedSize()
+            .help("Give it a name of your own, so it can be told from the others in \(row.folder ?? row.p ?? "its folder")")
+        }
+        PixelButton(title: "Open in terminal") { m.open(row) }
+      }
     }
   }
+
+  private var renaming: Bool { m.isRenaming(row, inWindow: inWindow) }
 
   private var stateWord: String {
     switch row.s {

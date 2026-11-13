@@ -73,10 +73,8 @@ struct AgentFacts: Equatable {
 struct AgentDetail: View {
   @EnvironmentObject var m: TTYCatModel
   let row: AgentRow
-  var renamingAtFirst = false  // a picture of it being renamed
-  @State private var renaming = false
-  @State private var typed = ""
-  @FocusState private var typing: Bool
+
+  private var renaming: Bool { m.isRenaming(row, inWindow: true) }
 
   private var activity: [ActivityItem] { m.window.activityFor == row.id ? m.window.activity : [] }
   private var about: AgentAbout? { m.window.activityFor == row.id ? m.window.about : nil }
@@ -99,7 +97,6 @@ struct AgentDetail: View {
       }
       recent
     }
-    .onAppear { if renamingAtFirst { startRenaming() } }
   }
 
   /// The way to its terminal beside its name where there's room for the name, else under it.
@@ -120,50 +117,12 @@ struct AgentDetail: View {
   private var terminal: some View {
     HStack(spacing: Rhythm.near) {
       if row.canOpen && !renaming {
-        PixelButton(title: "Rename", action: startRenaming)
+        PixelButton(title: "Rename") { m.startRenaming(row, inWindow: true) }
           .help("Give it a name of your own, so it can be told from the others in \(row.folder ?? row.p ?? "its folder")")
       }
       PixelButton(title: "Open in terminal", loud: true, enabled: row.canOpen) { m.open(row) }
     }
     .fixedSize()
-  }
-
-  private func startRenaming() {
-    typed = row.name ?? ""
-    renaming = true
-    typing = true
-  }
-
-  private func saveName() {
-    renaming = false
-    m.rename(row, to: typed)
-  }
-
-  /// Its name, to type over. Empty is no name of its own: it goes by its folder again, which the field shows.
-  private var nameField: some View {
-    VStack(alignment: .leading, spacing: Rhythm.near) {
-      TextField("", text: $typed, prompt: Text(row.folder ?? row.p ?? "").foregroundStyle(Palette.faint))
-        .textFieldStyle(.plain)
-        .font(Pixel.title)
-        .foregroundStyle(Palette.white)
-        .padding(.horizontal, 8)
-        .frame(maxWidth: 360, minHeight: 32)
-        .pixelBox(Palette.code, border: Palette.orange)
-        .focused($typing)
-        .onSubmit(saveName)
-        .onExitCommand { renaming = false }
-        .onChange(of: typed) { _, new in
-          if new.count > AgentName.longest { typed = String(new.prefix(AgentName.longest)) }
-        }
-        .accessibilityLabel("Name")
-      HStack(spacing: Rhythm.near) {
-        PixelButton(title: "Cancel") { renaming = false }
-        PixelButton(title: "Save", loud: true, action: saveName)
-      }
-      .fixedSize()
-      Text("Leave it empty and it goes by its folder, \(row.folder ?? row.p ?? "").").font(Pixel.small).foregroundStyle(Palette.muted)
-        .fixedSize(horizontal: false, vertical: true)
-    }
   }
 
   private var identity: some View {
@@ -173,7 +132,7 @@ struct AgentDetail: View {
         .frame(width: 72, height: 68).accessibilityHidden(true)
       VStack(alignment: .leading, spacing: Rhythm.near) {
         if renaming {
-          nameField
+          AgentNameField(row: row)
         } else {
           Text(row.title).font(Pixel.headline).foregroundStyle(Palette.white).lineLimit(1).minimumScaleFactor(0.5)
             .accessibilityAddTraits(.isHeader)

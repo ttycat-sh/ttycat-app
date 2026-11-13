@@ -174,7 +174,7 @@ enum Preview {
         rows[0].name = "the coupon fix"
         (rows[0].p, rows[0].folder) = ("the coupon fix", "web-shop")
         rows.insert(working(2, "web-shop", "Read: checkout.test.ts"), at: 1)
-        model.window.renaming = scene == "rename" ? "w1" : nil
+        (model.renaming, model.window.renaming) = scene == "rename" ? ("w1", "w1") : (nil, nil)
       }
       model.window.selected = asPane || rest != nil ? "w1" : nil
       model.selected = "w1"

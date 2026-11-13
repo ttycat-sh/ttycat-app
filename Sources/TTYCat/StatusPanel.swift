@@ -179,7 +179,7 @@ final class StatusPanel: NSObject {
       typing: panel.firstResponder is NSTextView, repeating: event.isARepeat)
     guard let key else { return false }
     if key == .close {
-      close()
+      if !model.stopRenaming() { close() }  // Esc drops a name being typed before it drops the panel
       return true
     }
     return model.handle(key)

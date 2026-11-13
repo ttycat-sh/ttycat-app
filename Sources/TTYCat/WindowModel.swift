@@ -80,7 +80,7 @@ final class WindowModel {
   // The agent open in the window, and what it's been doing. The panel has its own: the two are looked
   // at separately, and opening an agent in one leaves the other where it was.
   var selected: String?
-  var renaming: String?  // the agent whose page opens with its name being typed: for a picture of that
+  var renaming: String?  // the agent whose name is being typed, on its page here
   var activity: [ActivityItem] = []
   var about: AgentAbout?  // of the same agent
   var activityFor: String?  // the agent `activity` is about: the one shown can change before its own arrives

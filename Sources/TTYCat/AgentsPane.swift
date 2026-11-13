@@ -11,7 +11,7 @@ struct AgentsPane: View {
     if m.status == nil {
       empty(word: "STOPPED", line: m.problem ?? "The daemon isn't running. ttycat is starting it.", pose: .nap)
     } else if let row = m.windowAgent {
-      AgentDetail(row: row, renamingAtFirst: m.window.renaming == row.id)
+      AgentDetail(row: row)
     } else {
       empty(word: "READY", line: "No agents yet. Start one in any terminal and it shows up here.", pose: .idle)
     }
@@ -303,6 +303,13 @@ struct AgentCard: View {
     .buttonStyle(PixelPress())
     .disabled(!row.canOpen)
     .onHover { hovering = $0 }
+    // A right click: what can be done with it from here. Renaming opens its page, where the name is typed.
+    .contextMenu {
+      if row.canOpen {
+        Button("Rename\u{2026}") { m.startRenaming(row, inWindow: true) }
+        Button("Open in Terminal") { m.open(row) }
+      }
+    }
     .accessibilityElement(children: .ignore)
     .overlay(alignment: .bottomTrailing) {
       if let link = row.prs?.first { PullChip(link: link).padding(12) }

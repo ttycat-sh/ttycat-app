@@ -124,6 +124,46 @@ private func status(_ rows: [AgentRow]) -> DaemonStatus {
     #expect(daemon.requests("agent-name").isEmpty)
   }
 
+  @Test func renamingOpensItsPageWhereItWasAskedFor() {
+    let other = AgentRow(id: "w2", s: "working", a: "CC", n: "Claude", p: "shop")
+    let m = model(FakeDaemon(), rows: [shop, other])
+    m.startRenaming(other)  // in the panel
+    #expect(m.selected == "w2" && m.isRenaming(other, inWindow: false) && !m.isRenaming(shop, inWindow: false))
+    #expect(m.window.selected == nil && m.window.renaming == nil)  // the window is left where it was
+    m.startRenaming(shop, inWindow: true)  // a right click on its card
+    #expect(m.window.selected == "w1" && m.isRenaming(shop, inWindow: true) && m.renaming == "w2")
+    m.startRenaming(AgentRow(id: "1/down", s: "error", a: "--", p: "not reachable"))  // a machine, not an agent
+    #expect(m.renaming == "w2")
+  }
+
+  @Test func aNameHalfTypedIsDroppedWithItsPage() {
+    let other = AgentRow(id: "w2", s: "working", a: "CC", n: "Claude", p: "shop")
+    let m = model(FakeDaemon(), rows: [shop, other])
+    m.startRenaming(shop)
+    m.select(other)  // another agent's page
+    #expect(m.renaming == nil)
+    m.startRenaming(shop)
+    m.select(shop)  // its own again: still being typed
+    #expect(m.renaming == "w1")
+    m.closeAgent(inWindow: false)
+    #expect(m.renaming == nil)
+    m.startRenaming(shop)
+    #expect(m.handle(.back) == true && m.renaming == nil && m.selected == nil)
+    m.startRenaming(shop)
+    m.panelOpening()  // closed and opened again
+    #expect(m.renaming == nil)
+    m.startRenaming(shop, inWindow: true)
+    m.select(other, inWindow: true)
+    #expect(m.window.renaming == nil)
+  }
+
+  @Test func escDropsANameBeingTypedBeforeThePanel() {
+    let m = model(FakeDaemon(), rows: [shop])
+    #expect(!m.stopRenaming())  // nothing being typed: the panel closes
+    m.startRenaming(shop)
+    #expect(m.stopRenaming() && m.renaming == nil && m.selected == "w1")  // its page stays
+  }
+
   @Test func aNameTheDaemonRefusesIsSaid() async {
     let daemon = FakeDaemon()
     daemon.answer("agent-name", with: #"{"ok": false, "msg": "that agent has gone"}"#)
