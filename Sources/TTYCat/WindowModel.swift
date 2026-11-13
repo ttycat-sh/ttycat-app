@@ -6,6 +6,7 @@ struct PaneItem: Equatable, Identifiable {
   let title: String
   var icon = PixelIcon.navGrid  // 7 x 7 pixels, for the sidebar
   var summary: String?            // a line under the title
+  var badge: String?              // a word in a box beside the title, in the lists
 }
 
 enum WindowPanes {

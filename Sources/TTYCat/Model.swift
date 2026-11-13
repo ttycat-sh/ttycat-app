@@ -170,7 +170,7 @@ final class TTYCatModel: ObservableObject {
     WindowPanes.groups(
       welcomed: welcomed, boardMatters: boardMatters,
       extra: Extensions.panes.map {
-        (PaneItem(id: $0.id, title: $0.title, icon: $0.icon, summary: $0.summary), $0.settings)
+        (PaneItem(id: $0.id, title: $0.title, icon: $0.icon, summary: $0.summary, badge: $0.badge()), $0.settings)
       })
   }
 

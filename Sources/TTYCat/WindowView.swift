@@ -76,6 +76,10 @@ private struct PaneRow: View {
           .frame(width: 14, height: 14)
         Caps(pane.title, color: chosen ? Palette.white : Palette.muted)
         Spacer(minLength: 4)
+        if let word = pane.badge {
+          Text(word.uppercased()).font(Pixel.label).foregroundStyle(Palette.black)
+            .padding(.horizontal, 4).frame(height: 14).pixelBox(Palette.orange)
+        }
         if badge > 0 {
           Text("\(badge)").font(Pixel.label).foregroundStyle(Palette.black)
             .padding(.horizontal, 5).frame(height: 14).background(Palette.orange)
@@ -87,7 +91,7 @@ private struct PaneRow: View {
       .pixelBox(chosen ? Palette.card : Color.clear, border: chosen ? Palette.line : nil)
     }
     .buttonStyle(PixelPress())
-    .accessibilityLabel(pane.title)
+    .accessibilityLabel(pane.badge.map { "\(pane.title), \($0)" } ?? pane.title)
     .accessibilityAddTraits(chosen ? .isSelected : [])
   }
 }

@@ -72,7 +72,7 @@ private struct TopBar: View {
       tab("Agents", count: m.rows.count, page: .agents)
       tab("Bit", count: nil, page: .pet)
       ForEach(Extensions.pages, id: \.id) { extra in
-        tab(extra.title, count: nil, page: .extra(extra.id))
+        tab(extra.title, count: nil, badge: extra.badge(), page: .extra(extra.id), link: extra.link())
       }
       Spacer(minLength: 8)
       if m.boardMatters {
@@ -100,9 +100,14 @@ private struct TopBar: View {
     }
   }
 
-  private func tab(_ title: String, count: Int?, page: Page) -> some View {
-    let chosen = m.page == page
+  /// `link`: the tab goes there instead of to its page, as an extension's locked one does.
+  private func tab(_ title: String, count: Int?, badge: String? = nil, page: Page, link: URL? = nil) -> some View {
+    let chosen = m.page == page && link == nil
     return Button {
+      if let link {
+        NSWorkspace.shared.open(link)
+        return
+      }
       m.page = page
       m.selected = nil
     } label: {
@@ -110,6 +115,12 @@ private struct TopBar: View {
         Caps(title, color: chosen ? Palette.white : Palette.muted2)
         if let count, count > 0 {
           Text("\(count)").font(Pixel.small).foregroundStyle(Palette.muted)
+        }
+        if let badge {
+          Caps(badge, color: Palette.black)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 2)
+            .pixelBox(Palette.orange)
         }
       }
       .fixedSize()  // a name is never cut short to make room
@@ -119,7 +130,9 @@ private struct TopBar: View {
       .overlay(alignment: .bottom) { Rectangle().fill(chosen ? Palette.orange : Color.clear).frame(height: 2) }
     }
     .buttonStyle(PixelPress())
-    .accessibilityAddTraits(chosen ? .isSelected : [])
+    .help(link.map { "\(title): opens \($0.host() ?? "a website")" } ?? "")
+    .accessibilityLabel(badge.map { "\(title), \($0)" } ?? title)
+    .accessibilityAddTraits(chosen ? .isSelected : link != nil ? .isLink : [])
   }
 }
 
@@ -283,17 +296,23 @@ private struct AgentRowView: View {
     } label: {
       HStack(spacing: 7) {
         stateIcon.frame(width: 16, height: 16)
+        // Line by line, so the name gives way only to the age, and what it's doing to the rest.
         VStack(alignment: .leading, spacing: 0) {
-          Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+          HStack(spacing: 4) {
+            Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+            Spacer(minLength: 4)
+            Text(ageText(row.age)).font(Pixel.small).foregroundStyle(Palette.muted)
+          }
           HStack(spacing: 5) {
             if let host = row.host { Text(host).font(Pixel.small).foregroundStyle(Palette.white) }
             Text(row.d ?? "").font(Pixel.small).foregroundStyle(Palette.muted).lineLimit(1)
+            Spacer(minLength: 4)
+            // What an extension has to say of it, as on its card in the window: Extensions.cardNotes.
+            if let note = Extensions.cardNote(row) {
+              Text(note).font(Pixel.small).foregroundStyle(Palette.muted2).lineLimit(1).fixedSize()
+            }
+            Caps(row.a ?? "", color: Palette.muted2)
           }
-        }
-        Spacer(minLength: 4)
-        VStack(alignment: .trailing, spacing: 2) {
-          Text(ageText(row.age)).font(Pixel.small).foregroundStyle(Palette.muted)
-          Caps(row.a ?? "", color: Palette.muted2)
         }
         // Room for the way to its newest request, which sits over the row: a button can't hold another.
         if let link = row.prs?.first { PullChip(link: link).hidden() }
