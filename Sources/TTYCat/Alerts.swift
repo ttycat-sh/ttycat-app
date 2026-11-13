@@ -123,7 +123,7 @@ extension AgentRow {
   var answerable: Bool { ask == "approve" || ask == "choice" }
 
   var alertTitle: String {
-    ([n ?? "Agent", p ?? ""] + (host.map { [$0] } ?? [])).filter { !$0.isEmpty }.joined(separator: " \u{B7} ")
+    ([n ?? "Agent", title] + (host.map { [$0] } ?? [])).filter { !$0.isEmpty }.joined(separator: " \u{B7} ")
   }
 
   var alertBody: String {

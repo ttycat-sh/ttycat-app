@@ -168,7 +168,14 @@ enum Preview {
           verb: "wants to run", body: "pnpm add -D culori@4 --filter tokens", rev: "r5", ask: "terminal",
           note: "Codex can only be answered in its terminal"),
         at: 0)
-    case "detail":
+    case "detail", "named", "rename":
+      if scene != "detail" {
+        // Two in one folder, one of them given a name of its own.
+        rows[0].name = "the coupon fix"
+        (rows[0].p, rows[0].folder) = ("the coupon fix", "web-shop")
+        rows.insert(working(2, "web-shop", "Read: checkout.test.ts"), at: 1)
+        model.window.renaming = scene == "rename" ? "w1" : nil
+      }
       model.window.selected = asPane || rest != nil ? "w1" : nil
       model.selected = "w1"
       model.activity = [

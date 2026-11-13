@@ -363,6 +363,18 @@ final class TTYCatModel: ObservableObject {
     return true
   }
 
+  /// Give an agent a name of your own, or with none take it back, so it goes by its folder again. The
+  /// daemon keeps it, and the board lists the agent under it too. Nothing is sent to the agent.
+  func rename(_ row: AgentRow, to typed: String) {
+    guard row.canOpen, let name = AgentName.change(typed, for: row) else { return }
+    let id = row.id
+    Task {
+      let reply = await daemon.act(["t": "agent-name", "id": id, "name": name])
+      if !reply.ok { show(reply.problem(or: "couldn't rename it")) }
+      poll()
+    }
+  }
+
   func open(_ row: AgentRow) {
     guard row.canOpen else { return }
     let id = row.id

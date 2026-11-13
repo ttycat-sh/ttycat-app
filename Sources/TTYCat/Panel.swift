@@ -210,7 +210,7 @@ private struct Hero: View {
   }
 
   private var look: Look {
-    let name = "\(top?.n ?? "Agent") \u{B7} \(top?.p ?? "")"
+    let name = "\(top?.n ?? "Agent") \u{B7} \(top?.title ?? "")"
     switch m.hero {
     case .stopped:
       return Look(
@@ -299,7 +299,7 @@ private struct AgentRowView: View {
         // Line by line, so the name gives way only to the age, and what it's doing to the rest.
         VStack(alignment: .leading, spacing: 0) {
           HStack(spacing: 4) {
-            Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+            Text(row.title).font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
             Spacer(minLength: 4)
             Text(ageText(row.age)).font(Pixel.small).foregroundStyle(Palette.muted)
           }
@@ -408,10 +408,11 @@ struct AgentPage: View {
       BitView(pose: row.s == "working" ? .work : row.s == "done" ? .happy : row.s == "error" ? .alert : .idle, dot: 2)
         .frame(width: 36, height: 34)
       VStack(alignment: .leading, spacing: 2) {
-        Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+        Text(row.title).font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
         HStack(spacing: 5) {
           Caps(row.n ?? "Agent", color: Palette.muted2)
           if let host = row.host { Text(host).font(Pixel.small).foregroundStyle(Palette.muted2) }
+          if let folder = row.folderBesideName { Text(folder).font(Pixel.small).foregroundStyle(Palette.muted2).lineLimit(1) }
         }
       }
       Spacer(minLength: 0)

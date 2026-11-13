@@ -31,7 +31,15 @@ struct AgentRow: Decodable, Identifiable {
   var guess: [String]?  // which of those are estimates
   var prs: [PullLink]?  // pull and merge requests it made lately, newest first
   var ses: String?   // its session, as the agent names it: for an extension that knows more of its sessions
+  // The name you gave it, as you typed it, and the folder it's in. Only once it has a name: till then `p` is
+  // the folder, and after, the name in the board's letters. See AgentName.
+  var name: String?
+  var folder: String?
 
+  /// What it goes by: the name it was given, else its folder.
+  var title: String { name ?? p ?? "" }
+  /// Its folder, where its title no longer says it.
+  var folderBesideName: String? { name == nil || folder == title ? nil : folder }
   var needsYou: Bool { s == "blocked" || s == "error" }
   var canOpen: Bool { a != "--" }  // the row for a machine that can't be reached
 }

@@ -11,7 +11,7 @@ struct AgentsPane: View {
     if m.status == nil {
       empty(word: "STOPPED", line: m.problem ?? "The daemon isn't running. ttycat is starting it.", pose: .nap)
     } else if let row = m.windowAgent {
-      AgentDetail(row: row)
+      AgentDetail(row: row, renamingAtFirst: m.window.renaming == row.id)
     } else {
       empty(word: "READY", line: "No agents yet. Start one in any terminal and it shows up here.", pose: .idle)
     }
@@ -270,10 +270,12 @@ struct AgentCard: View {
                   dot: 2, seed: seed, dimmed: row.s == "idle")
             .frame(width: 36, height: 34)
           VStack(alignment: .leading, spacing: 3) {
-            Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+            Text(row.title).font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
             HStack(spacing: 6) {
               Caps(row.n ?? "Agent", color: Palette.muted2)
               if let host = row.host { Caps(host, color: Palette.white) }
+              // Where it is, once its name no longer says so.
+              if let folder = row.folderBesideName { Caps(folder, color: Palette.faint) }
             }
           }
           Spacer(minLength: 0)
@@ -305,7 +307,7 @@ struct AgentCard: View {
     .overlay(alignment: .bottomTrailing) {
       if let link = row.prs?.first { PullChip(link: link).padding(12) }
     }
-    .accessibilityLabel("\(row.p ?? "agent"), \(row.n ?? ""), \(state)\(counts.isEmpty ? "" : ", " + counts.spoken)\(Extensions.cardNote(row).map { ", " + $0 } ?? "")")
+    .accessibilityLabel("\(row.title.isEmpty ? "agent" : row.title), \(row.n ?? "")\(row.folderBesideName.map { ", in " + $0 } ?? ""), \(state)\(counts.isEmpty ? "" : ", " + counts.spoken)\(Extensions.cardNote(row).map { ", " + $0 } ?? "")")
     .accessibilityAddTraits(chosen ? .isSelected : [])
   }
 }
