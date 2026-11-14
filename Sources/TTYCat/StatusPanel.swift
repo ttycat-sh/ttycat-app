@@ -144,11 +144,16 @@ final class StatusPanel: NSObject {
       MainActor.assumeIsolated { self?.close() }
     }
     // Every click in the panel: a prompt's buttons wait until they've stopped. One in the app's own
-    // window is a click elsewhere, like any other app's.
+    // window is a click elsewhere, like any other app's. One in a menu isn't: it's the panel's own,
+    // from a right click on a row, and choosing from it mustn't close what it was chosen for.
     presses = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
       MainActor.assumeIsolated {
         guard let self else { return }
-        if event.window === self.panel { self.model.lastPanelClick = Date() } else if event.window != nil { self.close() }
+        if event.window === self.panel {
+          self.model.lastPanelClick = Date()
+        } else if let window = event.window, !Self.isMenu(window) {
+          self.close()
+        }
       }
       return event
     }
@@ -173,13 +178,16 @@ final class StatusPanel: NSObject {
     }
   }
 
+  /// A menu's window, not one of the app's own: menus float above everything, the panel included.
+  static func isMenu(_ window: NSWindow) -> Bool { window.level.rawValue >= NSWindow.Level.popUpMenu.rawValue }
+
   private func pressed(_ event: NSEvent) -> Bool {
     let key = PanelKeys.key(
       code: event.keyCode, characters: event.charactersIgnoringModifiers, flags: event.modifierFlags,
       typing: panel.firstResponder is NSTextView, repeating: event.isARepeat)
     guard let key else { return false }
     if key == .close {
-      close()
+      if !model.stopRenaming() { close() }  // Esc drops a name being typed before it drops the panel
       return true
     }
     return model.handle(key)

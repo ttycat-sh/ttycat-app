@@ -41,7 +41,7 @@ struct AskCard: View {
   private var header: some View {
     VStack(alignment: .leading, spacing: 3) {
       HStack(spacing: 6) {
-        Caps("\(row.n ?? "Agent") \u{B7} \(row.p ?? "")", color: Palette.white)
+        Caps("\(row.n ?? "Agent") \u{B7} \(row.title)", color: Palette.white)
         if let host = row.host { Text(host).font(Pixel.small).foregroundStyle(Palette.muted2) }
         Spacer(minLength: 4)
         if let position, position.of > 1 {

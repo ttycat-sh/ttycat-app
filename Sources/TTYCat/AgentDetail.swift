@@ -74,6 +74,8 @@ struct AgentDetail: View {
   @EnvironmentObject var m: TTYCatModel
   let row: AgentRow
 
+  private var renaming: Bool { m.isRenaming(row, inWindow: true) }
+
   private var activity: [ActivityItem] { m.window.activityFor == row.id ? m.window.activity : [] }
   private var about: AgentAbout? { m.window.activityFor == row.id ? m.window.about : nil }
 
@@ -113,7 +115,14 @@ struct AgentDetail: View {
   }
 
   private var terminal: some View {
-    PixelButton(title: "Open in terminal", loud: true, enabled: row.canOpen) { m.open(row) }.fixedSize()
+    HStack(spacing: Rhythm.near) {
+      if row.canOpen && !renaming {
+        PixelButton(title: "Rename") { m.startRenaming(row, inWindow: true) }
+          .help("Give it a name of your own, so it can be told from the others in \(row.folder ?? row.p ?? "its folder")")
+      }
+      PixelButton(title: "Open in terminal", loud: true, enabled: row.canOpen) { m.open(row) }
+    }
+    .fixedSize()
   }
 
   private var identity: some View {
@@ -122,11 +131,17 @@ struct AgentDetail: View {
               dot: 4, dimmed: row.s == "idle")
         .frame(width: 72, height: 68).accessibilityHidden(true)
       VStack(alignment: .leading, spacing: Rhythm.near) {
-        Text(row.p ?? "").font(Pixel.headline).foregroundStyle(Palette.white).lineLimit(1).minimumScaleFactor(0.5)
-          .accessibilityAddTraits(.isHeader)
+        if renaming {
+          AgentNameField(row: row)
+        } else {
+          Text(row.title).font(Pixel.headline).foregroundStyle(Palette.white).lineLimit(1).minimumScaleFactor(0.5)
+            .accessibilityAddTraits(.isHeader)
+        }
         HStack(spacing: Rhythm.near) {
           Caps(row.n ?? "Agent", color: Palette.muted2)
           if let host = row.host { Caps(host, color: Palette.white) }
+          // Where it is, once its name no longer says so.
+          if let folder = row.folderBesideName { Caps(folder, color: Palette.faint) }
         }
         if let cwd = about?.cwd {
           // Its folder, cut in the middle: the end of a path says the most.

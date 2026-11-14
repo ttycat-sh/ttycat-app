@@ -25,6 +25,7 @@ final class TTYCatModel: ObservableObject {
   @Published var problem: String?
   @Published var sampled = false
   @Published var selected: String?              // the agent whose page is open in the panel; the window's is its own
+  @Published var renaming: String?              // the agent whose name is being typed in the panel; the window's is its own
   @Published var highlighted: String?           // the row the arrow keys are on
   var armedAsk: String?                         // the rev of the prompt whose buttons work now: see AskCard
   @Published var activity: [ActivityItem] = []
@@ -115,6 +116,7 @@ final class TTYCatModel: ObservableObject {
 
   func closeAgent(inWindow: Bool) {
     if inWindow { window.selected = nil } else { selected = nil }
+    stopRenaming(inWindow: inWindow)
   }
   /// The rows under the card at the top of the Agents page.
   /// The card at the top goes by the daemon's order, as the board does: an agent that failed, or one
@@ -305,7 +307,7 @@ final class TTYCatModel: ObservableObject {
       return true
     case .back:
       guard selected != nil else { return false }
-      selected = nil
+      closeAgent(inWindow: false)
       return true
     case .deny:
       // Only the prompt on screen, and only once its buttons work: a key is held to the same delay as a click.
@@ -321,6 +323,7 @@ final class TTYCatModel: ObservableObject {
   /// Opens an agent's page where it was clicked: in the panel, or in the window. Never in both.
   func select(_ row: AgentRow, inWindow: Bool = false) {
     guard row.canOpen else { return }
+    if !isRenaming(row, inWindow: inWindow) { stopRenaming(inWindow: inWindow) }  // a name half typed is another agent's
     if inWindow {
       if window.activityFor != row.id { (window.activity, window.about, window.activityFor) = ([], nil, row.id) }
       window.selected = row.id
@@ -361,6 +364,36 @@ final class TTYCatModel: ObservableObject {
       poll()
     }
     return true
+  }
+
+  /// Opens an agent's page where that was asked for, the panel or the window, with its name ready to type
+  /// over: AgentNameField.
+  func startRenaming(_ row: AgentRow, inWindow: Bool = false) {
+    guard row.canOpen else { return }
+    if (inWindow ? window.selected : selected) != row.id { select(row, inWindow: inWindow) }
+    if inWindow { window.renaming = row.id } else { renaming = row.id }
+  }
+
+  func isRenaming(_ row: AgentRow, inWindow: Bool) -> Bool { (inWindow ? window.renaming : renaming) == row.id }
+
+  /// What was being typed is dropped. False if nothing was: Esc in the panel then closes it.
+  @discardableResult
+  func stopRenaming(inWindow: Bool = false) -> Bool {
+    let was = inWindow ? window.renaming : renaming
+    if inWindow { window.renaming = nil } else { renaming = nil }
+    return was != nil
+  }
+
+  /// Give an agent a name of your own, or with none take it back, so it goes by its folder again. The
+  /// daemon keeps it, and the board lists the agent under it too. Nothing is sent to the agent.
+  func rename(_ row: AgentRow, to typed: String) {
+    guard row.canOpen, let name = AgentName.change(typed, for: row) else { return }
+    let id = row.id
+    Task {
+      let reply = await daemon.act(["t": "agent-name", "id": id, "name": name])
+      if !reply.ok { show(reply.problem(or: "couldn't rename it")) }
+      poll()
+    }
   }
 
   func open(_ row: AgentRow) {
@@ -557,6 +590,7 @@ final class TTYCatModel: ObservableObject {
   func panelOpening() {
     highlighted = nil
     armedAsk = nil
+    renaming = nil
     Task { _ = await daemon.act(["t": "app-act", "a": "pet-here", "id": ""]) }
     if page == .pet, needs > 0 {
       handsOffUntil = Date().addingTimeInterval(HandsOff.afterInterruption)

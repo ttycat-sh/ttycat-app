@@ -8,7 +8,7 @@ struct AgentFilter: Equatable {
 
   var harness: String?  // an agent's two letters, as on the board's tabs: CC, CX, OC, PI
   var state: State?
-  var text = ""         // typed: what an agent's project, kind or machine has to contain
+  var text = ""         // typed: what an agent's name, folder, kind or machine has to contain
 
   private var typed: String { text.trimmingCharacters(in: .whitespaces) }
   var isOn: Bool { harness != nil || state != nil || !typed.isEmpty }
@@ -29,7 +29,7 @@ struct AgentFilter: Equatable {
   func shows(_ row: AgentRow) -> Bool {
     guard (harness == nil || row.a == harness) && (state == nil || Self.state(of: row) == state) else { return false }
     let typed = self.typed
-    return typed.isEmpty || [row.p, row.n, row.host].contains { $0?.localizedCaseInsensitiveContains(typed) == true }
+    return typed.isEmpty || [row.title, row.folder, row.n, row.host].contains { $0?.localizedCaseInsensitiveContains(typed) == true }
   }
 
   func apply(_ rows: [AgentRow]) -> [AgentRow] { isOn ? rows.filter(shows) : rows }

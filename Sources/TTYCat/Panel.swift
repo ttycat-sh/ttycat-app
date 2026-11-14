@@ -210,7 +210,7 @@ private struct Hero: View {
   }
 
   private var look: Look {
-    let name = "\(top?.n ?? "Agent") \u{B7} \(top?.p ?? "")"
+    let name = "\(top?.n ?? "Agent") \u{B7} \(top?.title ?? "")"
     switch m.hero {
     case .stopped:
       return Look(
@@ -299,7 +299,7 @@ private struct AgentRowView: View {
         // Line by line, so the name gives way only to the age, and what it's doing to the rest.
         VStack(alignment: .leading, spacing: 0) {
           HStack(spacing: 4) {
-            Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+            Text(row.title).font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
             Spacer(minLength: 4)
             Text(ageText(row.age)).font(Pixel.small).foregroundStyle(Palette.muted)
           }
@@ -326,6 +326,13 @@ private struct AgentRowView: View {
     .buttonStyle(PixelPress())
     .disabled(!row.canOpen)
     .onHover { hovering = $0 && row.canOpen }
+    // A right click, as on its card in the window. Renaming opens its page here, where the name is typed.
+    .contextMenu {
+      if row.canOpen {
+        Button("Rename\u{2026}") { m.startRenaming(row) }
+        Button("Open in Terminal") { m.open(row) }
+      }
+    }
     .overlay(alignment: .trailing) {
       if let link = row.prs?.first { PullChip(link: link).padding(.trailing, 20) }  // clear of the arrow
     }
@@ -375,15 +382,30 @@ struct AgentPage: View {
         if let link = row.prs?.first { PullChip(link: link) }  // what it put up for review lately
         Text("\(stateWord) \(ageText(row.age))").font(Pixel.small).foregroundStyle(stateColor)
       }
+      if renaming {
+        // Over whatever else is here: a prompt stays where it is, and can still be answered.
+        AgentNameField(row: row)
+          .padding(8)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .pixelBox(Palette.card, border: Palette.line)
+      }
       if row.s == "blocked" {
         AskCard(row: row).id(row.rev)
-      } else {
+      } else if !renaming {
         title
       }
       recent
-      PixelButton(title: "Open in terminal") { m.open(row) }
+      HStack(spacing: 6) {
+        if !renaming {
+          PixelButton(title: "Rename") { m.startRenaming(row, inWindow: inWindow) }.fixedSize()
+            .help("Give it a name of your own, so it can be told from the others in \(row.folder ?? row.p ?? "its folder")")
+        }
+        PixelButton(title: "Open in terminal") { m.open(row) }
+      }
     }
   }
+
+  private var renaming: Bool { m.isRenaming(row, inWindow: inWindow) }
 
   private var stateWord: String {
     switch row.s {
@@ -408,10 +430,11 @@ struct AgentPage: View {
       BitView(pose: row.s == "working" ? .work : row.s == "done" ? .happy : row.s == "error" ? .alert : .idle, dot: 2)
         .frame(width: 36, height: 34)
       VStack(alignment: .leading, spacing: 2) {
-        Text(row.p ?? "").font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
+        Text(row.title).font(Pixel.title).foregroundStyle(Palette.white).lineLimit(1)
         HStack(spacing: 5) {
           Caps(row.n ?? "Agent", color: Palette.muted2)
           if let host = row.host { Text(host).font(Pixel.small).foregroundStyle(Palette.muted2) }
+          if let folder = row.folderBesideName { Text(folder).font(Pixel.small).foregroundStyle(Palette.muted2).lineLimit(1) }
         }
       }
       Spacer(minLength: 0)
