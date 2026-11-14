@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import Testing
 @testable import TTYCat
 
@@ -29,6 +30,15 @@ private let proPanes: [(pane: PaneItem, settings: Bool)] = [
   @Test func anExtensionsPanesGoWithTheirKind() {
     let groups = WindowPanes.groups(welcomed: true, boardMatters: false, extra: proPanes)
     #expect(ids(groups) == [["agents", "usage", "log"], ["general", "agent-setup", "notifications", "look", "advanced", "about"]])
+  }
+
+  @Test func aPanesBadgeGoesWhereverItsListed() {
+    let marked = [(pane: PaneItem(id: "usage", title: "Usage", badge: "New"), settings: false),
+                  (pane: PaneItem(id: "look", title: "Look", badge: "New"), settings: true)]
+    let groups = WindowPanes.groups(welcomed: true, boardMatters: false, extra: marked)
+    #expect(groups.flatMap { $0 }.filter { $0.badge == "New" }.map(\.id) == ["usage", "look"])
+    #expect(WindowPanes.settingsList(groups).first { $0.id == "look" }?.badge == "New")
+    #expect(groups.flatMap { $0 }.first { $0.id == "general" }?.badge == nil)
   }
 
   @Test func aPaneThatHasGoneFallsBackToGeneral() {
@@ -321,6 +331,15 @@ private let proPanes: [(pane: PaneItem, settings: Bool)] = [
     Extensions.cardNotes = [{ _ in "one" }, { _ in nil }, { _ in "" }, { $0.ses == nil ? nil : "two" }]
     #expect(Extensions.cardNote(row) == "one \u{00B7} two")
     #expect(Extensions.cardNote(AgentRow(id: "p2", s: "idle")) == "one")
+  }
+
+  @Test func aTabOpensItsPageUnlessItSaysOtherwise() {
+    let plain = ExtraPage(id: "plain", title: "Plain") { AnyView(EmptyView()) }
+    #expect(plain.badge() == nil)
+    #expect(plain.link() == nil)
+    let locked = ExtraPage(id: "locked", title: "Locked", badge: { "New" }, link: { URL(string: "https://example.com/") }) { AnyView(EmptyView()) }
+    #expect(locked.badge() == "New")
+    #expect(locked.link()?.host() == "example.com")
   }
 
   @Test func aRowsSessionIsReadFromTheDaemon() throws {
