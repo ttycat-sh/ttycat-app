@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import TTYCat
@@ -155,6 +156,13 @@ private func status(_ rows: [AgentRow]) -> DaemonStatus {
     m.startRenaming(shop, inWindow: true)
     m.select(other, inWindow: true)
     #expect(m.window.renaming == nil)
+  }
+
+  @Test func aClickInTheRowsMenuIsntAClickOutsideThePanel() {
+    // The panel floats where menus do, and closes for a click in any other window of the app's.
+    let menu = NSWindow()
+    menu.level = .popUpMenu
+    #expect(StatusPanel.isMenu(menu) && !StatusPanel.isMenu(NSWindow()))
   }
 
   @Test func escDropsANameBeingTypedBeforeThePanel() {

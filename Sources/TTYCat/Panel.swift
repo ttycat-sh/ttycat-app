@@ -326,6 +326,13 @@ private struct AgentRowView: View {
     .buttonStyle(PixelPress())
     .disabled(!row.canOpen)
     .onHover { hovering = $0 && row.canOpen }
+    // A right click, as on its card in the window. Renaming opens its page here, where the name is typed.
+    .contextMenu {
+      if row.canOpen {
+        Button("Rename\u{2026}") { m.startRenaming(row) }
+        Button("Open in Terminal") { m.open(row) }
+      }
+    }
     .overlay(alignment: .trailing) {
       if let link = row.prs?.first { PullChip(link: link).padding(.trailing, 20) }  // clear of the arrow
     }
